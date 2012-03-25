@@ -5,9 +5,9 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 
 import supergame.Config;
-import supergame.Game;
 import supergame.character.Character;
 import supergame.character.NPCController;
+import supergame.gui.Game;
 import supergame.modify.ChunkModifier;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
@@ -140,7 +140,7 @@ public class GameServer extends GameEndPoint {
         if (!mClientStateMap.containsKey(LOCAL_CONN)) {
             System.err.println("creating char for local connection " + 0);
             ClientState localState = new ClientState(this, LOCAL_CONN);
-            localState.mCharacter.setController(Game.mCamera);
+            localState.mCharacter.setController(Game.sCamera);
             mClientStateMap.put(LOCAL_CONN, localState);
 
             // Create NPC

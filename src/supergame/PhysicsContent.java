@@ -4,6 +4,7 @@ import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
@@ -35,6 +36,16 @@ public class PhysicsContent {
         makeBox(mat, 0, 15, new Vector3f(0, 0, 0));
         makeBox(mat, 1, 2, new Vector3f(0, 30, 0));
         makeBox(mat, 1, 2, new Vector3f(0, 34, 0));
+
+        DirectionalLight sun = new DirectionalLight();
+        sun.setColor(ColorRGBA.White);
+        sun.setDirection(new Vector3f(-2, -1, -2).normalizeLocal());
+        rootNode.addLight(sun);
+
+        DirectionalLight sun2 = new DirectionalLight();
+        sun2.setColor(ColorRGBA.White);
+        sun2.setDirection(new Vector3f(2, -1, -2).normalizeLocal());
+        rootNode.addLight(sun2);
 
         mRegistrar = new PhysicsRegistrar() {
             @Override

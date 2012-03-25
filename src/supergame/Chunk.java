@@ -130,8 +130,10 @@ public class Chunk {
             return false;
 
         String chunkName = "Chunk" + mIndex.toString();
+        /*
         System.err.println(chunkName + " has "
                + mChunkIntIndices.capacity() / 4 + " indices");
+         */
 
         Mesh m = new Mesh();
         m.setBuffer(Type.Index, 1, mChunkIntIndices.asIntBuffer());

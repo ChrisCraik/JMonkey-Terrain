@@ -20,7 +20,7 @@ public class CameraController extends Controller {
 
     private final Camera mCamera;
 
-    /*package*/ CameraController(Camera camera) {
+    public CameraController(Camera camera) {
         mCamera = camera;
     }
 

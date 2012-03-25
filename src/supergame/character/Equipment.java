@@ -3,7 +3,7 @@ package supergame.character;
 
 import com.jme3.math.Vector3f;
 
-import supergame.Game;
+import supergame.SuperSimpleApplication;
 import supergame.modify.BlockChunkModifier;
 import supergame.modify.SphereChunkModifier;
 import supergame.network.Structs.ControlMessage;
@@ -72,7 +72,7 @@ public class Equipment {
     }
 
     private void useTool(ControlMessage message) {
-        mMsSinceShoot += Game.tpf();
+        mMsSinceShoot += SuperSimpleApplication.tpf();
         if (mMsSinceShoot > 300 && (message.use0 || message.use1)) {
             mMsSinceShoot = 0;
 

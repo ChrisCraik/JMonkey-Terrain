@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty>
+    <useStyles filename="nifty-default-styles.xml" />
+    <useControls filename="nifty-default-controls.xml" />
+    <screen id="start" controller="supergame.gui.Game">
+        <layer childLayout="center">
+            <panel style="nifty-panel-simple" width="35%" childLayout="vertical" visibleToMouse="true">
+                <effect>
+                    <onStartScreen name="move" mode="in" direction="top" length="200" startDelay="100" inherit="true"/>
+                    <onEndScreen name="move" mode="out" direction="bottom" length="200" startDelay="100" inherit="true"/>
+                </effect>
+                <control name="label" color="#000f" text="Welcome to Supergame!" />
+                <panel childLayout="horizontal">
+                    <control width="50%" name="label" color="#000f" text="Name" />
+                    <control id="NameField" name="textfield" maxLength="20" text="Defaulto" />
+                </panel>
+                <panel childLayout="horizontal">
+                    <control width="50%" name="label" color="#000f" text="Host Locally?" />
+                    <control id="HostingCheckBox" name="checkbox" checked="true" />
+                </panel>
+                <panel id="ServerPickerPanel" childLayout="horizontal" visible="false">
+                    <control width="50%" name="label" color="#000f" text="Server IP" />
+                    <control id="ServerField" name="textfield" maxLength="20" text="localhost" />
+                </panel>
+                <control id="StartButton" width="100%" name="button" label="Start!" />
+            </panel>
+        </layer>
+    </screen>
+    <screen id="load">
+        <layer childLayout="center">
+            <panel style="nifty-panel-simple" width="50%" childLayout="vertical" >
+                <effect>
+                    <onStartScreen name="move" mode="in" direction="top" length="200" startDelay="0" inherit="true"/>
+                    <onEndScreen name="move" mode="out" direction="bottom" length="200" startDelay="100" inherit="true"/>
+                </effect>
+                    <control name="label" color="#000f" text="Loading..." />
+                    <control name="label" color="#000f" text="0%" />
+            </panel>
+        </layer>
+    </screen>
+    <screen id="end">
+    </screen>
+</nifty>

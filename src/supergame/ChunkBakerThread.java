@@ -27,7 +27,7 @@ public class ChunkBakerThread extends Thread {
         Chunk current;
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         Object buffers = Chunk.parallel_workerBuffersInit();
-        while (Game.isRunning()) {
+        while (SuperSimpleApplication.isRunning()) {
             try {
                 current = mChunkProvider.getChunkToProcess();
                 // System.out.println(id + " took chunk " + current);

@@ -170,10 +170,10 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         mLastY = y;
         mLastZ = z;
 
-        Game.PROFILE("pos update");
+        SuperSimpleApplication.PROFILE("pos update");
 
         sweepNearby(x, y, z, 1, true);
-        Game.PROFILE("loc chunk stall");
+        SuperSimpleApplication.PROFILE("loc chunk stall");
 
         System.out.println("NOW " + mChunks.size() + " CHUNKS EXIST.");
     }

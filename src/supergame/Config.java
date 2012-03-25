@@ -1,5 +1,7 @@
 package supergame;
 
+import java.util.logging.Level;
+
 public class Config {
     public static final int CHUNK_DIVISION = 16;
     public static final int WORKER_THREADS = 2;
@@ -16,4 +18,6 @@ public class Config {
     public static int OBJECT_BUFFER_SIZE = 128*1024;
     public static int WRITE_BUFFER_SIZE = OBJECT_BUFFER_SIZE * 4;
 
+    // LOGGING
+    public static Level LOG_LEVEL = Level.SEVERE;
 }
