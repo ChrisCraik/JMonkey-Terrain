@@ -4,7 +4,7 @@ package supergame;
 import com.jme3.material.Material;
 import com.jme3.scene.Node;
 
-import supergame.Game.PhysicsRegistrar;
+import supergame.PhysicsContent.PhysicsRegistrar;
 import supergame.modify.ChunkModifier;
 
 import java.util.ArrayList;

@@ -2,16 +2,18 @@ package supergame;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.font.BitmapText;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
 
+import supergame.character.Controller;
 import supergame.modify.ChunkCastle;
+import supergame.modify.ChunkModifier;
+import supergame.network.GameEndPoint;
+import supergame.network.GameServer;
 
 public class Game extends SimpleApplication {
     ChunkManager mChunkManager;
@@ -30,43 +32,16 @@ public class Game extends SimpleApplication {
         mLastProfMillis = tempTime;
     }
 
-    private void makeBox(Material mat, float mass, float size, Vector3f translate) {
-        Box box = new Box(Vector3f.ZERO, size, size, size);
-        Geometry g = new Geometry("box", box);
-        g.setMaterial(mat);
-        rootNode.attachChild(g);
-
-        g.setLocalTranslation(translate);
-        RigidBodyControl control = new RigidBodyControl(mass);
-        g.addControl(control);
-
-        mBulletAppState.getPhysicsSpace().add(control);
-    }
-
-    public abstract class PhysicsRegistrar {
-        public abstract void registerPhysics(Geometry geom);
-    };
-
-    private void setupPhysics() {
-        Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat.setBoolean("m_UseMaterialColors", true);
-        mat.setColor("m_Ambient",  ColorRGBA.DarkGray);
-        mat.setColor("m_Diffuse",  ColorRGBA.DarkGray);
-
-        mBulletAppState = new BulletAppState();
-        stateManager.attach(mBulletAppState);
-
-        makeBox(mat, 0, 15, new Vector3f(0, 0, 0));
-        makeBox(mat, 1, 2, new Vector3f(0, 30, 0));
-        makeBox(mat, 1, 2, new Vector3f(0, 34, 0));
-    }
+    //TODO: rename to cameracontroller
+    public static Controller mCamera = null;
+    private PhysicsContent mPhysicsContent;
 
     @Override
     public void simpleInitApp() {
+        mCamera = new CameraController(cam);
         flyCam.setMoveSpeed(100);
 
-
-        setupPhysics();
+        mPhysicsContent = new PhysicsContent(rootNode, assetManager, stateManager);
 
         Material matWireframe = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         matWireframe.getAdditionalRenderState().setWireframe(true);
@@ -91,22 +66,43 @@ public class Game extends SimpleApplication {
         Node terrainNode = new Node("terrain");
         rootNode.attachChild(terrainNode);
 
-        PhysicsRegistrar registrar = new PhysicsRegistrar() {
-            @Override
-            public void registerPhysics(Geometry geom) {
-                mBulletAppState.getPhysicsSpace().add(geom);
-            }
-        };
-
-        mChunkManager = new ChunkManager(0, 0, 0, 6, mat, terrainNode, registrar);
+        mChunkManager = new ChunkManager(0, 0, 0, 6, mat, terrainNode, mPhysicsContent.getRegistrar());
         ChunkCastle.create();
-        //ChunkModifier.setServerMode(true, mChunkManager);
+    }
+
+    private BitmapText mStatusText = null;
+    private GameEndPoint mGameEndPoint = null;
+
+    private static float sTpf;
+    public static float tpf() {
+        return sTpf;
     }
 
     @Override
     public void simpleUpdate(float tpf) {
+        sTpf = tpf;
         mChunkManager.updateWithPosition(0, 0, 0);
         mChunkManager.renderChunks();
+
+
+        if (!ChunkModifier.isEmpty()) {
+            if (mStatusText == null) {
+                mStatusText = new BitmapText(guiFont, false);
+                mStatusText.setSize(guiFont.getCharSet().getRenderedSize());
+                mStatusText.setText("Completing chunk generation...");
+                mStatusText.setLocalTranslation(300, mStatusText.getLineHeight(), 0);
+            }
+            if (mStatusText.getParent() == null) {
+                guiNode.attachChild(mStatusText);
+            }
+        } else {
+            if (mStatusText != null && mStatusText.getParent() != null) {
+                mStatusText.removeFromParent();
+            }
+            if (mGameEndPoint == null) {
+                mGameEndPoint = new GameServer();
+            }
+        }
     }
 
     private static boolean mRunning = true;

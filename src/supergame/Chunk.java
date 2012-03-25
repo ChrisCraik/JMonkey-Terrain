@@ -12,7 +12,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.util.BufferUtils;
 
-import supergame.Game.PhysicsRegistrar;
+import supergame.PhysicsContent.PhysicsRegistrar;
 import supergame.modify.ChunkModifierInterface;
 import supergame.network.Structs.ChunkMessage;
 
