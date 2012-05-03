@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jbullet.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jinput.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jME3-core.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jME3-desktop.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jME3-jbullet.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jME3-lwjgl-natives.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jME3-lwjgl.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jME3-niftygui.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jME3-plugins.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jMonkeyEngine3.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/lwjgl.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/nifty-default-controls-javadoc.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/nifty-default-controls.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/nifty-style-black.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/nifty.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/retrace.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/stack-alloc.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/xmlpull-xpp3.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/kryonet-1.04-all.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/jME3-jogg.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/j-ogg-vorbisd.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/j-ogg-oggd.jar"/>
+	<classpathentry kind="lib" path="/Users/ccraik/Documents/lib/eventbus.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -34,7 +34,7 @@
                     <onEndScreen name="move" mode="out" direction="bottom" length="200" startDelay="100" inherit="true"/>
                 </effect>
                     <control name="label" color="#000f" text="Loading..." />
-                    <control name="label" color="#000f" text="0%" />
+                    <control id="LoadingPercentage" width="100%" name="label" color="#000f" text="0%" />
             </panel>
         </layer>
     </screen>

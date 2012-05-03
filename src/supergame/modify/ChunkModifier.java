@@ -1,13 +1,13 @@
 
 package supergame.modify;
 
-import java.util.ArrayList;
 import supergame.Chunk;
 import supergame.ChunkIndex;
 import supergame.ChunkProcessor;
 import supergame.Config;
 import supergame.network.Structs.ChunkMessage;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -37,6 +37,15 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
 
     public static boolean isEmpty() {
         return sChangeList.isEmpty();
+    }
+
+    static int sMaxSeen = 0;
+    public static float getCompletion() {
+        if (sMaxSeen == 0) {
+            sMaxSeen = sChangeList.size();
+            return 0;
+        }
+        return 1.0f - (1.0f * sChangeList.size() / sMaxSeen);
     }
 
     public static void setServerMode(boolean serverMode, ChunkProcessor cp) {
@@ -101,7 +110,7 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
      */
     public static void step(ChunkProcessor cp) {
         ChunkModifier currentModifier = sChangeList.peekFirst();
-        
+
         // no modifications, quick return
         if (currentModifier != null) {
             // start chunk processing, if needed
