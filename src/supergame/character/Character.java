@@ -1,10 +1,12 @@
 
 package supergame.character;
 
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.math.Vector3f;
 
 import supergame.Config;
+import supergame.gui.Game;
 import supergame.network.PiecewiseLerp;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ControlMessage;
@@ -20,13 +22,12 @@ public class Character extends Entity {
         float array[] = new float[LERP_FIELDS]; // x,y,z, heading, pitch
     }
 
-    //public final long mCharacterId;
     private float mHeading = 0;
     private float mPitch = 0;
 
     private final Equipment mEquipment = new Equipment();
 
-    private final CharacterControl mCharacterControl = null;
+    private final CharacterControl mCharacterControl;
     private Controller mController = null;
     private ControlMessage mControlMessage = new ControlMessage();
     private final ChatMessage mChatMessage = new ChatMessage();
@@ -34,30 +35,23 @@ public class Character extends Entity {
 
     // temporary vectors used for intermediate calculations. should not be
     // queried outside of the functions that set them.
-    private Vector3f mPosition = new Vector3f();
-
-    public Character() {
-        // TODO: create character control
-        //mCharacterId = Game.collision.mPhysics.createCharacter(0, 0, 0);
-    }
+    private final Vector3f mPosition = new Vector3f();
 
     public Character(float x, float y, float z) {
-        //mCharacterId = Game.collision.mPhysics.createCharacter(x, y, z);
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 2f, 1);
+        mCharacterControl = new CharacterControl(capsuleShape, 0.05f);
+        mCharacterControl.setJumpSpeed(20);
+        mCharacterControl.setFallSpeed(30);
+        mCharacterControl.setGravity(30);
+        mCharacterControl.setPhysicsLocation(new Vector3f(x, y, z));
+        Game.registerPhysics(mCharacterControl);
+
+        // TODO: make node, add mCharacterControl as its control
     }
 
-    public void render(boolean localToolsAllowed) {
+    public void processControl(boolean localToolsAllowed) {
         // TODO: move something renderable in place of the character
-/*
-        Game.collision.getPhysics().queryCharacterPosition(mCharacterId, mPosition);
-        GL11.glPushMatrix();
-        GL11.glTranslatef(mPosition.x, mPosition.y, mPosition.z);
-        GL11.glRotatef(mHeading, 0, 1, 0);
-        GL11.glRotatef(mPitch, 1, 0, 0);
-        float height = mControlMessage.duck ? 0.75f : 1.5f;
-        Game.collision.drawCube(1, height, 1);
-        GL11.glPopMatrix();
-*/
-        mEquipment.render(mPosition, mControlMessage, localToolsAllowed);
+        mEquipment.processControl(mPosition, mControlMessage, localToolsAllowed);
     }
 
     public void setController(Controller c) {
@@ -90,23 +84,14 @@ public class Character extends Entity {
         if (mControlMessage.jump) {
             mCharacterControl.jump();
         }
-        mCharacterControl.setWalkDirection(walkDirection);
-        /*
-        // scale by frame time, since btKinematicCharacterController doesn't
-        walkDirection.scale(Game.tpf() / 100f);
 
-        float strengthIfJumping = Config.PLAYER_MIDAIR_CONTROL;
-        Game.collision.getPhysics().controlCharacter(mCharacterId, strengthIfJumping,
-                mControlMessage.jump, walkDirection.x, 0, walkDirection.z);
-                */
+        walkDirection.multLocal(0.25f);
+        mCharacterControl.setWalkDirection(walkDirection);
     }
 
     public void postMove() {
-        // TODO: query physics position
-        mPosition = mCharacterControl.getPhysicsLocation();
-        /*
-        Game.collision.getPhysics().queryCharacterPosition(mCharacterId, mPosition);
-        */
+        mCharacterControl.getPhysicsLocation(mPosition);
+
         if (mController != null) {
             mController.response(mPosition);
         }
@@ -141,9 +126,8 @@ public class Character extends Entity {
         mHeading = lerpFloats[3];
         mPitch = lerpFloats[4];
 
+        //TODO: bias, so position = (old pos * (1-bias)) + (new pos * bias)
         mCharacterControl.setPhysicsLocation(pos);
-        //TODO: bias
-        //Game.collision.getPhysics().setCharacterPosition(mCharacterId, pos, bias);
     }
 
     public ControlMessage getControl() {

@@ -179,12 +179,12 @@ public abstract class GameEndPoint {
     public abstract void setupMove(double localTime);
     public abstract void postMove(double localTime);
 
-    public void render(double localTime) {
+    public void processControl(double localTime) {
         for (Entity e : mEntityMap.values()) {
             if (e instanceof Character) {
                 // only modify chunks/spawn entities on server
                 boolean allowTools = this instanceof GameServer;
-                ((Character)e).render(allowTools);
+                ((Character)e).processControl(allowTools);
             }
         }
 

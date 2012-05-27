@@ -76,7 +76,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
                         // Stall until chunk processed
                         Chunk localChunk = mChunks.get(new ChunkIndex(x + i, y + j, z + k));
                         while (!localChunk.processingIsComplete()) {}
-                        localChunk.serial_render(mMaterial, mParent, mPhysicsRegistrar);
+                        localChunk.serial_createGeometry(mMaterial, mParent, mPhysicsRegistrar);
                     } else {
                         // prioritize the chunk
                         prioritizeChunk(x + i, y + j, z + k);
@@ -180,8 +180,13 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
 
 
     public void renderChunks() {
-        for (Chunk c : mChunks.values())
-            c.serial_render(mMaterial, mParent, mPhysicsRegistrar);
+        int max = 4;
+        for (Chunk c : mChunks.values()) {
+            if (c.serial_createGeometry(mMaterial, mParent, mPhysicsRegistrar))
+                max--;
+            if (max == 0)
+                return;
+        }
     }
 
     @Override

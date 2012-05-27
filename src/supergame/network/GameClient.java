@@ -4,8 +4,8 @@ package supergame.network;
 import com.esotericsoftware.kryonet.Client;
 
 import supergame.Config;
+import supergame.SuperSimpleApplication;
 import supergame.character.Character;
-import supergame.gui.Game;
 import supergame.modify.ChunkModifier;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
@@ -104,7 +104,7 @@ public class GameClient extends GameEndPoint {
         // send control info to server
         if (mEntityMap.containsKey(mLocalCharId)) {
             Character localChar = (Character)mEntityMap.get(mLocalCharId);
-            localChar.setController(Game.sCamera);
+            localChar.setController(SuperSimpleApplication.sCamera);
             ((Client)mEndPoint).sendUDP(localChar.getControl());
 
             ChatMessage chat = localChar.getChat();

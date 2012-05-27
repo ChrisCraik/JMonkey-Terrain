@@ -19,7 +19,7 @@ public class PhysicsContent {
 
 
     public abstract class PhysicsRegistrar {
-        public abstract void registerPhysics(Geometry geom);
+        public abstract void registerPhysics(Object obj);
     };
     public PhysicsRegistrar getRegistrar() { return mRegistrar; }
 
@@ -49,8 +49,8 @@ public class PhysicsContent {
 
         mRegistrar = new PhysicsRegistrar() {
             @Override
-            public void registerPhysics(Geometry geom) {
-                mBulletAppState.getPhysicsSpace().add(geom);
+            public void registerPhysics(Object obj) {
+                mBulletAppState.getPhysicsSpace().add(obj);
             }
         };
     }

@@ -1,60 +1,91 @@
 
 package supergame;
 
+import com.jme3.input.InputManager;
+import com.jme3.input.controls.ActionListener;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 import supergame.character.Controller;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ControlMessage;
 
 
-public class CameraController extends Controller {
-    private final Vector3f mPosition = new Vector3f();
+public class CameraController extends Controller implements ActionListener {
+    private final Vector3f mWalkDir = new Vector3f();
     private final Vector3f mForwardDir = new Vector3f();
-    private float mPitchAngle, mHeadingAngle;
     private final Vector3f mStrafeDir = new Vector3f();
 
     private final Camera mCamera;
 
-    public CameraController(Camera camera) {
+    private boolean mLeft, mRight, mForward, mBack, mJump;
+    private boolean mToolMain, mToolSecondary;
+    private int mToolSelection = 0;
+
+    private static final float MIN_TARGET = 3;
+    private static final float MAX_TARGET = 10;
+    private float mTargetDistance = 5;
+
+    public CameraController(Camera camera, InputManager inputManager) {
         mCamera = camera;
+
+        inputManager.addListener(this, "left");
+        inputManager.addListener(this, "right");
+        inputManager.addListener(this, "forward");
+        inputManager.addListener(this, "back");
+        inputManager.addListener(this, "jump");
+
+        inputManager.addListener(this, "target-forward");
+        inputManager.addListener(this, "target-back");
+
+        inputManager.addListener(this, "tool-main");
+        inputManager.addListener(this, "tool-secondary");
+
+        inputManager.addListener(this, "select-tool-0");
+        inputManager.addListener(this, "select-tool-1");
+        inputManager.addListener(this, "select-tool-2");
+        inputManager.addListener(this, "select-tool-3");
+
+        mLeft = mRight = mForward = mBack = mJump = false;
+        mToolMain = mToolSecondary = false;
     }
 
-    private int mToolSelection = 0;
-    private int updateToolSelection() {
-        if (Keyboard.isKeyDown(Keyboard.KEY_0)) {
+
+    @Override
+    public void onAction(String binding, boolean value, float arg2) {
+        if (binding.equals("left")) {
+            mLeft = value;
+        } else if (binding.equals("right")) {
+            mRight = value;
+        } else if (binding.equals("forward")) {
+            mForward = value;
+        } else if (binding.equals("back")) {
+            mBack = value;
+        } else if (binding.equals("jump")) {
+            mJump = value;
+        } else if (binding.equals("target-forward")) {
+            mTargetDistance = Math.max(mTargetDistance + 1, MAX_TARGET);
+        } else if (binding.equals("target-back")) {
+            mTargetDistance = Math.max(mTargetDistance - 1, MIN_TARGET);
+        } else if (binding.equals("tool-main")) {
+            mToolMain = value;
+        } else if (binding.equals("tool-secondary")) {
+            mToolSecondary = value;
+        }
+
+        if (!value) return; // only interested in key down below
+
+        if (binding.equals("select-tool-0")) {
             mToolSelection = 0;
-        } else if (Keyboard.isKeyDown(Keyboard.KEY_1)) {
+        } else if (binding.equals("select-tool-1")) {
             mToolSelection = 1;
-        } else if (Keyboard.isKeyDown(Keyboard.KEY_2)) {
+        } else if (binding.equals("select-tool-2")) {
             mToolSelection = 2;
-        } else if (Keyboard.isKeyDown(Keyboard.KEY_3)) {
+        } else if (binding.equals("select-tool-3")) {
             mToolSelection = 3;
         }
-        return mToolSelection;
-    }
-
-    static final float MIN_TARGET = 3;
-    static final float MAX_TARGET = 10;
-    private float mTargetDistance = 5;
-    private float updateTargetDistance() {
-        while (Keyboard.next()) {
-            if (Keyboard.getEventKey() == Keyboard.KEY_UP
-                    && Keyboard.getEventKeyState()) {
-                mTargetDistance += 1;
-            } else if (Keyboard.getEventKey() == Keyboard.KEY_DOWN
-                    && Keyboard.getEventKeyState()) {
-                mTargetDistance -= 1;
-            }
-        }
-        mTargetDistance += Mouse.getDWheel() / 1000.0;
-        mTargetDistance = Math.min(mTargetDistance, MAX_TARGET);
-        mTargetDistance = Math.max(mTargetDistance, MIN_TARGET);
-        return mTargetDistance;
     }
 
     /**
@@ -64,87 +95,42 @@ public class CameraController extends Controller {
     @Override
     public void control(double localTime, ControlMessage control, ChatMessage chat) {
         float angles[] = mCamera.getRotation().toAngles(null);
-        mPitchAngle = angles[2];
-        mHeadingAngle = angles[0];
+        control.pitch = angles[2];
+        control.heading = angles[0];
+
+        // TODO: early return if chatting
 
         // calculate absolute forward/strafe
         mCamera.getDirection(mForwardDir);
         mCamera.getLeft(mStrafeDir);
 
-        control.heading = mHeadingAngle;
-        control.pitch = mPitchAngle;
-
-        if (tryChat(chat)) {
-            // still chatting, so ignore keys for movement, tool select
-            return;
-        }
-
         // set walkDirection for character
-        Vector3f walkDirection = new Vector3f(0, 0, 0);
-        if (Keyboard.isKeyDown(Keyboard.KEY_W))
-            walkDirection.addLocal(mForwardDir);
-        if (Keyboard.isKeyDown(Keyboard.KEY_S))
-            walkDirection.addLocal(mForwardDir.negate());
-        if (Keyboard.isKeyDown(Keyboard.KEY_A))
-            walkDirection.addLocal(mStrafeDir);
-        if (Keyboard.isKeyDown(Keyboard.KEY_D))
-            walkDirection.addLocal(mStrafeDir.negate());
+        mWalkDir.set(0, 0, 0);
+        if (mForward)
+            mWalkDir.addLocal(mForwardDir);
+        if (mBack)
+            mWalkDir.subtractLocal(mForwardDir);
+        if (mRight)
+            mWalkDir.addLocal(mStrafeDir);
+        if (mLeft)
+            mWalkDir.subtractLocal(mStrafeDir);
 
-        control.x = walkDirection.x;
-        control.z = walkDirection.z;
-        control.jump = Keyboard.isKeyDown(Keyboard.KEY_SPACE);
+        control.x = mWalkDir.x;
+        control.z = mWalkDir.z;
+        control.jump = mJump;
         control.duck = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
         control.sprint = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL);
 
-        control.use0 = Mouse.isButtonDown(0);
-        control.use1 = Mouse.isButtonDown(1);
-        control.toolSelection = updateToolSelection();
-        control.targetDistance = updateTargetDistance();
+        control.use0 = mToolMain;
+        control.use1 = mToolSecondary;
+        control.toolSelection = mToolSelection;
+        control.targetDistance = mTargetDistance;
+
         // TODO: movement when no char attached
-
-        if (/*Game.heartbeatFrame*/ false) {
-            System.out.println("dir:" + walkDirection + ", pitch:" + mPitchAngle + ", heading:"
-                    + mHeadingAngle);
-        }
-    }
-
-    private final String mCurrent = null;
-    private boolean tryChat(ChatMessage chat) {
-        /*
-        if (mCurrent == null) {
-            while (InputProcessor.PollKeyboard()) {
-                if (Keyboard.getEventKey() == Keyboard.KEY_RETURN) {
-                    mCurrent = "";
-                    break;
-                }
-            }
-        }
-
-        if (mCurrent == null)
-            return false;
-
-        // build up the string the player is typing until a 'return'
-        while (InputProcessor.PollKeyboard()) {
-            if (Keyboard.getEventKey() == Keyboard.KEY_BACK
-                    && !mCurrent.isEmpty()) {
-                mCurrent = mCurrent.substring(0, mCurrent.length() - 1);
-            } else if (Keyboard.getEventKey() == Keyboard.KEY_RETURN) {
-                chat.s = mCurrent;
-                mCurrent = null;
-                ChatDisplay.current = null;
-                return true;
-            } else {
-                mCurrent += Keyboard.getEventCharacter();
-            }
-        }
-        ChatDisplay.current = mCurrent;
-        return true;
-    */
-        return false;
     }
 
     @Override
     public void response(Vector3f pos) {
-        mPosition.set(pos);
+        mCamera.setLocation(pos);
     }
 }

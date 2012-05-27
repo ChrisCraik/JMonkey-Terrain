@@ -125,7 +125,7 @@ public class Chunk {
     }
 
     private Geometry mGeometry = null;
-    public boolean serial_render(Material mat, Node parent, PhysicsRegistrar registrar) {
+    public boolean serial_createGeometry(Material mat, Node parent, PhysicsRegistrar registrar) {
         if (mIsEmpty || mGeometry != null)
             return false;
 
@@ -145,12 +145,10 @@ public class Chunk {
         mGeometry.setMaterial(mat);
         parent.attachChild(mGeometry);
 
-
         CollisionShape shape = CollisionShapeFactory.createMeshShape(mGeometry);
         RigidBodyControl control = new RigidBodyControl(shape, 0);
         mGeometry.addControl(control);
         registrar.registerPhysics(mGeometry);
-
 
         return true;
     }

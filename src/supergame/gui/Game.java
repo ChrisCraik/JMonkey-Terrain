@@ -2,7 +2,6 @@
 package supergame.gui;
 
 import com.jme3.app.Application;
-import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.material.Material;
@@ -16,10 +15,9 @@ import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.TextRenderer;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
-import supergame.CameraController;
 import supergame.ChunkManager;
 import supergame.PhysicsContent;
-import supergame.character.Controller;
+import supergame.SuperSimpleApplication;
 import supergame.modify.ChunkCastle;
 import supergame.modify.ChunkModifier;
 import supergame.network.GameEndPoint;
@@ -29,20 +27,27 @@ import java.util.logging.Logger;
 
 public class Game extends AbstractAppState implements ScreenController {
     private Nifty mNifty;
-    private SimpleApplication mApp;
+    private SuperSimpleApplication mApp;
 
     private PhysicsContent mPhysicsContent;
     private ChunkManager mChunkManager;
     private GameEndPoint mGameEndPoint;
+    private double mLocalTime = 0;
 
-    public static Controller sCamera = null;
+    private static Game sInstance;
+
+    public static void registerPhysics(Object obj) {
+        sInstance.mPhysicsContent.getRegistrar().registerPhysics(obj);
+    }
 
     // AppState methods
 
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
-        mApp=(SimpleApplication)app;
+        sInstance = this;
+
+        mApp = (SuperSimpleApplication)app;
 
         Logger.getLogger("").severe("INITIALIZING APP STATE");
 
@@ -59,26 +64,44 @@ public class Game extends AbstractAppState implements ScreenController {
         mChunkManager = new ChunkManager(0, 0, 0, 8, mat,
                 mApp.getRootNode(), mPhysicsContent.getRegistrar());
         ChunkCastle.create();
-
-        sCamera = new CameraController(mApp.getCamera());
     }
 
     @Override
     public void update(float tpf) {
+        mLocalTime += tpf;
+
         mChunkManager.updateWithPosition(0, 0, 0);
         mChunkManager.renderChunks();
 
-        float completionPercentage = ChunkModifier.getCompletion() * 100;
         Element element = mNifty.getCurrentScreen().findElementByName("LoadingPercentage");
         if (element != null) {
+            float completionPercentage = ChunkModifier.getCompletion() * 100;
             String text = String.format("%.2f%%", completionPercentage);
             element.getRenderer(TextRenderer.class).setText(text);
         }
 
         if (ChunkModifier.isEmpty() && mGameEndPoint == null) {
+            // TODO: choose server vs client
             mGameEndPoint = new GameServer();
+
             mNifty.gotoScreen("end");
-            // TODO: spawn character
+            mApp.setMouseMenuMode(false);
+
+            boolean isServer = mGameEndPoint instanceof GameServer;
+            ChunkModifier.setServerMode(isServer, mChunkManager);
+        }
+
+        if (mGameEndPoint != null) {
+            mGameEndPoint.setupMove(mLocalTime);
+        }
+    }
+
+    @Override
+    public void render(com.jme3.renderer.RenderManager rm) {
+        // TODO: handle physics executing in parallel to render
+        if (mGameEndPoint != null) {
+            mGameEndPoint.postMove(mLocalTime);
+            mGameEndPoint.processControl(mLocalTime);
         }
     }
 
@@ -102,10 +125,11 @@ public class Game extends AbstractAppState implements ScreenController {
     @NiftyEventSubscriber(id = "HostingCheckBox")
     public void onAllCheckBoxChanged(final String id, final CheckBoxStateChangedEvent event) {
         Element element = mNifty.getCurrentScreen().findElementByName("ServerPickerPanel");
-        if (event.isChecked())
+        if (event.isChecked()) {
             element.hide();
-        else
+        } else {
             element.show();
+        }
     }
 
     @NiftyEventSubscriber(id = "StartButton")

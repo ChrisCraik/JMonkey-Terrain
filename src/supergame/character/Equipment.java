@@ -30,9 +30,9 @@ public class Equipment {
     private final Vector3f mTargetPos = new Vector3f();
     private final Vector3f mTargetVoxelPos = new Vector3f();
 
-    private static int mMsSinceShoot = 0;
+    private static float mSecondsSinceShoot = 0;
 
-    public void render(Vector3f position, ControlMessage message, boolean localToolsAllowed) {
+    public void processControl(Vector3f position, ControlMessage message, boolean localToolsAllowed) {
         HPVector(mTargetDir, 180 - message.heading, message.pitch);
 
         mTargetPos.set(mTargetDir);
@@ -72,14 +72,16 @@ public class Equipment {
     }
 
     private void useTool(ControlMessage message) {
-        mMsSinceShoot += SuperSimpleApplication.tpf();
-        if (mMsSinceShoot > 300 && (message.use0 || message.use1)) {
-            mMsSinceShoot = 0;
+        mSecondsSinceShoot += SuperSimpleApplication.tpf();
+        if (mSecondsSinceShoot > 0.3f && (message.use0 || message.use1)) {
+            mSecondsSinceShoot = 0;
 
             float increment = 0.5f;
             if (message.use1) {
                 increment *= -1;
             }
+
+            System.err.println("processing tool " + message.toolSelection);
 
             switch (message.toolSelection) {
                 case (TROWEL):
