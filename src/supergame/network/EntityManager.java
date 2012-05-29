@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public abstract class GameEndPoint {
+public abstract class EntityManager {
     public static class TransmitPair {
         public TransmitPair(Connection connection, Object object) {
             this.connection = connection;
@@ -59,7 +59,7 @@ public abstract class GameEndPoint {
      */
     protected final HashMap<Class<? extends EntityData>, Class<? extends Entity>> mPacketToClassMap = new HashMap<Class<? extends EntityData>, Class<? extends Entity>>();
 
-    public GameEndPoint(EndPoint endPoint, WritableByteChannel writer, ReadableByteChannel reader) {
+    public EntityManager(EndPoint endPoint, WritableByteChannel writer, ReadableByteChannel reader) {
         mEndPoint = endPoint;
         mWriter = writer;
         mReader = reader;
@@ -176,14 +176,15 @@ public abstract class GameEndPoint {
     protected int mLocalCharId = -1;
     //protected final ChatDisplay mChatDisplay = new ChatDisplay();
 
-    public abstract void setupMove(double localTime);
-    public abstract void postMove(double localTime);
+    protected abstract void queryIntents(double localTime);
+    public abstract void processAftermath(double localTime);
 
-    public void processControl(double localTime) {
+    public void queryAndProcessIntents(double localTime) {
+        queryIntents(localTime);
         for (Entity e : mEntityMap.values()) {
             if (e instanceof Character) {
                 // only modify chunks/spawn entities on server
-                boolean allowTools = this instanceof GameServer;
+                boolean allowTools = this instanceof ServerEntityManager;
                 ((Character)e).processControl(allowTools);
             }
         }

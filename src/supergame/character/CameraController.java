@@ -1,5 +1,5 @@
 
-package supergame;
+package supergame.character;
 
 import com.jme3.input.InputManager;
 import com.jme3.input.controls.ActionListener;
@@ -8,10 +8,8 @@ import com.jme3.renderer.Camera;
 
 import org.lwjgl.input.Keyboard;
 
-import supergame.character.Controller;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ControlMessage;
-
 
 public class CameraController extends Controller implements ActionListener {
     private final Vector3f mWalkDir = new Vector3f();

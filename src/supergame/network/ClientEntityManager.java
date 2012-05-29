@@ -21,31 +21,31 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class GameClient extends GameEndPoint {
+public class ClientEntityManager extends EntityManager {
     /**
-     * Normal game client constructor.
+     * Normal ClientEntityManager constructor.
      */
-    public GameClient() {
+    public ClientEntityManager() {
         super(new Client(Config.WRITE_BUFFER_SIZE, Config.OBJECT_BUFFER_SIZE), null, null);
     }
 
     /**
-     * Game client that also saves received packets for future playback.
+     * ClientEntityManager constructor that also saves received packets for future playback.
      *
      * @param w The client stores received packets from server in this.
      */
-    public GameClient(WritableByteChannel w) {
+    public ClientEntityManager(WritableByteChannel w) {
         super(new Client(Config.WRITE_BUFFER_SIZE, Config.OBJECT_BUFFER_SIZE), w, null);
     }
 
     /**
-     * 'Virtual' Game client that connects to a BufferedReader instead of a
+     * 'Virtual' ClientEntityManager that connects to a BufferedReader instead of a
      * server, for playing back saved network transcripts.
      *
      * @param r Read by the client as though a stream of packets from the
      *            server.
      */
-    public GameClient(ReadableByteChannel r) {
+    public ClientEntityManager(ReadableByteChannel r) {
         super(null, null, r);
     }
 
@@ -100,7 +100,7 @@ public class GameClient extends GameEndPoint {
     private double mClockCorrection = Double.MAX_VALUE;
 
     @Override
-    public void setupMove(double localTime) {
+    protected void queryIntents(double localTime) {
         // send control info to server
         if (mEntityMap.containsKey(mLocalCharId)) {
             Character localChar = (Character)mEntityMap.get(mLocalCharId);
@@ -156,7 +156,7 @@ public class GameClient extends GameEndPoint {
     }
 
     @Override
-    public void postMove(double localTime) {
+    public void processAftermath(double localTime) {
         // for each character, sample interpolation window
         for (Integer key : mEntityMap.keySet()) {
             Entity value = mEntityMap.get(key);

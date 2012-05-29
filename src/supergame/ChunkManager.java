@@ -126,6 +126,9 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
     }
 
     public void updateWithPosition(long x, long y, long z) {
+        // create geometry as needed from chunks finished processing
+        createGeometry();
+
         // NOTE: assumes constant mLoadDistance
 
         // process modified chunks, swap them into place as needed
@@ -178,8 +181,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         System.out.println("NOW " + mChunks.size() + " CHUNKS EXIST.");
     }
 
-
-    public void renderChunks() {
+    private void createGeometry() {
         int max = 4;
         for (Chunk c : mChunks.values()) {
             if (c.serial_createGeometry(mMaterial, mParent, mPhysicsRegistrar))

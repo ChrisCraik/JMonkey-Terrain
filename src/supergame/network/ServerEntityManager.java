@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class GameServer extends GameEndPoint {
+public class ServerEntityManager extends EntityManager {
     private int mNextEntityId = 1;
 
     // FIXME: this assumes 0 isn't a valid connection. is that guaranteed?
@@ -31,7 +31,7 @@ public class GameServer extends GameEndPoint {
     /**
      * Normal game server constructor.
      */
-    public GameServer() {
+    public ServerEntityManager() {
         super(new Server(Config.WRITE_BUFFER_SIZE, Config.OBJECT_BUFFER_SIZE), null, null);
     }
 
@@ -41,7 +41,7 @@ public class GameServer extends GameEndPoint {
      *
      * @param w The server stores packets it sends in this.
      */
-    public GameServer(WritableByteChannel w) {
+    public ServerEntityManager(WritableByteChannel w) {
         super(new Server(Config.WRITE_BUFFER_SIZE, Config.OBJECT_BUFFER_SIZE), w, null);
     }
 
@@ -163,7 +163,7 @@ public class GameServer extends GameEndPoint {
     }
 
     @Override
-    public void setupMove(double localTime) {
+    protected void queryIntents(double localTime) {
         updateConnections();
 
         // receive control messages from clients
@@ -202,7 +202,7 @@ public class GameServer extends GameEndPoint {
     }
 
     @Override
-    public void postMove(double localTime) {
+    public void processAftermath(double localTime) {
         for (Entity e : mEntityMap.values()) {
             if (e instanceof Character) {
                 ((Character)e).postMove();

@@ -13,6 +13,12 @@ import supergame.network.Structs.ControlMessage;
 import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
 
+/**
+ * A Character represents a creature in the game world. It is controlled by a
+ * {@link Controller} which provides it's desire. The {@link Controller} defines
+ * which item the Character tries to use and when, desired movement direction,
+ * and even spoken text.
+ */
 public class Character extends Entity {
 
     private final static int LERP_FIELDS = 5;

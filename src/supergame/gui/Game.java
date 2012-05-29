@@ -20,8 +20,8 @@ import supergame.PhysicsContent;
 import supergame.SuperSimpleApplication;
 import supergame.modify.ChunkCastle;
 import supergame.modify.ChunkModifier;
-import supergame.network.GameEndPoint;
-import supergame.network.GameServer;
+import supergame.network.EntityManager;
+import supergame.network.ServerEntityManager;
 
 import java.util.logging.Logger;
 
@@ -31,7 +31,7 @@ public class Game extends AbstractAppState implements ScreenController {
 
     private PhysicsContent mPhysicsContent;
     private ChunkManager mChunkManager;
-    private GameEndPoint mGameEndPoint;
+    private EntityManager mEntityManager;
     private double mLocalTime = 0;
 
     private static Game sInstance;
@@ -71,7 +71,6 @@ public class Game extends AbstractAppState implements ScreenController {
         mLocalTime += tpf;
 
         mChunkManager.updateWithPosition(0, 0, 0);
-        mChunkManager.renderChunks();
 
         Element element = mNifty.getCurrentScreen().findElementByName("LoadingPercentage");
         if (element != null) {
@@ -80,28 +79,27 @@ public class Game extends AbstractAppState implements ScreenController {
             element.getRenderer(TextRenderer.class).setText(text);
         }
 
-        if (ChunkModifier.isEmpty() && mGameEndPoint == null) {
+        if (ChunkModifier.isEmpty() && mEntityManager == null) {
             // TODO: choose server vs client
-            mGameEndPoint = new GameServer();
+            mEntityManager = new ServerEntityManager();
 
             mNifty.gotoScreen("end");
             mApp.setMouseMenuMode(false);
 
-            boolean isServer = mGameEndPoint instanceof GameServer;
+            boolean isServer = mEntityManager instanceof ServerEntityManager;
             ChunkModifier.setServerMode(isServer, mChunkManager);
         }
 
-        if (mGameEndPoint != null) {
-            mGameEndPoint.setupMove(mLocalTime);
+        if (mEntityManager != null) {
+            mEntityManager.queryAndProcessIntents(mLocalTime);
         }
     }
 
     @Override
     public void render(com.jme3.renderer.RenderManager rm) {
         // TODO: handle physics executing in parallel to render
-        if (mGameEndPoint != null) {
-            mGameEndPoint.postMove(mLocalTime);
-            mGameEndPoint.processControl(mLocalTime);
+        if (mEntityManager != null) {
+            mEntityManager.processAftermath(mLocalTime);
         }
     }
 

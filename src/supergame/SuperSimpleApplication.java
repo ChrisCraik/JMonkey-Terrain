@@ -12,6 +12,7 @@ import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.system.AppSettings;
 
 import de.lessvoid.nifty.Nifty;
+import supergame.character.CameraController;
 import supergame.character.Controller;
 import supergame.gui.Game;
 

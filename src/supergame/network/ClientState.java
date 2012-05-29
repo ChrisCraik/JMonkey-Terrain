@@ -16,7 +16,7 @@ public class ClientState {
     private String mName = null;
     private final HashMap<ChunkIndex, ChunkMessage> mChunksToSync = new HashMap<ChunkIndex, ChunkMessage>();
 
-    public ClientState(GameServer server, int connectionId) {
+    public ClientState(ServerEntityManager server, int connectionId) {
         mCharacter = new Character(0f, 40f, 0f);
         mCharacterId = server.registerEntity(mCharacter);
 
@@ -51,7 +51,7 @@ public class ClientState {
         return messages;
     }
 
-    public void disconnect(GameServer server) {
+    public void disconnect(ServerEntityManager server) {
         // Client has disconnected.
         server.unregisterEntity(mCharacterId);
     }
