@@ -130,14 +130,17 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
     }
 
     public void updateWithPosition(long x, long y, long z) {
-        // create geometry as needed from chunks finished processing
-        createGeometry();
-
-        // NOTE: assumes constant mLoadDistance
+        processPosition(x, y, z);
 
         // process modified chunks, swap them into place as needed
         ChunkModifier.step(this);
 
+        // create geometry as needed from chunks finished processing
+        createGeometry();
+    }
+
+    private void processPosition(long x, long y, long z) {
+        // NOTE: assumes constant mLoadDistance
         long dx = x - mLastX, dy = y - mLastY, dz = z - mLastZ;
 
         if (dx == 0 && dy == 0 && dz == 0)
@@ -190,8 +193,9 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         for (Chunk c : mChunks.values()) {
             if (c.serial_createGeometry(mMaterial, mParent, mPhysicsRegistrar))
                 max--;
-            if (max == 0)
-                return;
+
+            // TODO: why does this cause flickering?
+            if (max == 0 && false) return;
         }
     }
 
