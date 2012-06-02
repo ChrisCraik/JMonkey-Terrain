@@ -26,19 +26,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  * geometry for display and physics. parallel_ methods are those called
  * (indirectly) by those processing threads. Serial methods (such as drawing
  * the chunks) are for the UI thread.
- *
+ * <p>
  * In order to be modified (for building, and destruction) chunks are replaced
  * with copies that are modified. See the second constructor.
- *
+ * <p>
  * First time processing:
  *     1) Weights are calculated
  *     2) Create geometry
  *     3) Create index and vertex lists are created (the format used by OpenGL
  *        & Bullet)
  *     4) Generate point normals (for OpenGL) from TerrainGenerator
- *
+ * <p>
  * Then the chunk is ready for rendering and collisions. But there's more:
- *
+ * <p>
  * First modification:
  *     1) Weights are calculated from the TerrainGenerator, combined with the
  *        modification
@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     4) Generate point normals by brute force, by averaging triangle normals
  *     5) finally, the chunk's weights are saved so that later
  *        modifications can use it as a starting point
- *
+ * <p>
  * Further modifications:
  *     1) Weights are taken from the previous chunk, and combined with the new
  *        modification

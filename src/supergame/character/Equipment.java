@@ -6,7 +6,7 @@ import com.jme3.math.Vector3f;
 import supergame.SuperSimpleApplication;
 import supergame.modify.BlockChunkModifier;
 import supergame.modify.SphereChunkModifier;
-import supergame.network.Structs.ControlMessage;
+import supergame.network.Structs.DesiredActionMessage;
 
 public class Equipment {
     public static void HPVector(Vector3f vec, float heading, float pitch) {
@@ -32,7 +32,7 @@ public class Equipment {
 
     private static float mSecondsSinceShoot = 0;
 
-    public void processControl(Vector3f position, ControlMessage message, boolean localToolsAllowed) {
+    public void processDesiredAction(Vector3f position, DesiredActionMessage message, boolean localToolsAllowed) {
         HPVector(mTargetDir, 180 - message.heading, message.pitch);
 
         mTargetPos.set(mTargetDir);
@@ -71,7 +71,7 @@ public class Equipment {
         }
     }
 
-    private void useTool(ControlMessage message) {
+    private void useTool(DesiredActionMessage message) {
         mSecondsSinceShoot += SuperSimpleApplication.tpf();
         if (mSecondsSinceShoot > 0.3f && (message.use0 || message.use1)) {
             mSecondsSinceShoot = 0;

@@ -4,10 +4,6 @@
 
 package supergame;
 
-interface ChunkProvider {
-    public Chunk getChunkToProcess() throws InterruptedException;
-}
-
 public class ChunkBakerThread extends Thread {
     @SuppressWarnings("unused")
     private final int mId;

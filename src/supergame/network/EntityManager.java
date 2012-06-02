@@ -10,11 +10,11 @@ import com.esotericsoftware.kryonet.Listener;
 import org.lwjgl.BufferUtils;
 
 import supergame.ChunkIndex;
-import supergame.character.Character;
-import supergame.character.Character.CharacterData;
+import supergame.character.Creature;
+import supergame.character.Creature.CreatureData;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
-import supergame.network.Structs.ControlMessage;
+import supergame.network.Structs.DesiredActionMessage;
 import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
 import supergame.network.Structs.StartMessage;
@@ -25,11 +25,21 @@ import java.net.Inet4Address;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * An EntityManager tracks all {@link Entity}s in the world, and manipulates
+ * them each frame.
+ * <p>
+ * The master list of all of the entities created resides server-side, in the
+ * {@link ServerEntityManager}. It registers new entities created on the
+ * server, and sends them to the client with periodic updates.
+ * <p>
+ * Each game client runs a {@link ClientEntityManager} which runs as a slave to
+ * the remote {@link ServerEntityManager}.
+ */
 public abstract class EntityManager {
     public static class TransmitPair {
         public TransmitPair(Connection connection, Object object) {
@@ -115,21 +125,17 @@ public abstract class EntityManager {
 
         mKryo.register(StartMessage.class);
         mKryo.register(ChatMessage.class);
-        mKryo.register(ControlMessage.class);
+        mKryo.register(DesiredActionMessage.class);
 
         mKryo.register(ChunkIndex.class);
         mKryo.register(ChunkMessage.class);
-        registerEntityPacket(CharacterData.class, Character.class);
+        registerEntityPacket(CreatureData.class, Creature.class);
     }
 
     public void registerEntityPacket(Class<? extends EntityData> dataClass,
             Class<? extends Entity> entityClass) {
         mKryo.register(dataClass);
         mPacketToClassMap.put(dataClass, entityClass);
-    }
-
-    public Collection<Entity> getEntities() {
-        return mEntityMap.values();
     }
 
     /**
@@ -176,16 +182,16 @@ public abstract class EntityManager {
     protected int mLocalCharId = -1;
     //protected final ChatDisplay mChatDisplay = new ChatDisplay();
 
-    protected abstract void queryIntents(double localTime);
+    protected abstract void queryDesiredActions(double localTime);
     public abstract void processAftermath(double localTime);
 
     public void queryAndProcessIntents(double localTime) {
-        queryIntents(localTime);
+        queryDesiredActions(localTime);
         for (Entity e : mEntityMap.values()) {
-            if (e instanceof Character) {
+            if (e instanceof Creature) {
                 // only modify chunks/spawn entities on server
                 boolean allowTools = this instanceof ServerEntityManager;
-                ((Character)e).processControl(allowTools);
+                ((Creature)e).processDesiredAction(allowTools);
             }
         }
 

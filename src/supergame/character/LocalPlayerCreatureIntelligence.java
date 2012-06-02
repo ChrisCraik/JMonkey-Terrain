@@ -9,9 +9,9 @@ import com.jme3.renderer.Camera;
 import org.lwjgl.input.Keyboard;
 
 import supergame.network.Structs.ChatMessage;
-import supergame.network.Structs.ControlMessage;
+import supergame.network.Structs.DesiredActionMessage;
 
-public class CameraController extends Controller implements ActionListener {
+public class LocalPlayerCreatureIntelligence extends CreatureIntelligence implements ActionListener {
     private final Vector3f mWalkDir = new Vector3f();
     private final Vector3f mForwardDir = new Vector3f();
     private final Vector3f mStrafeDir = new Vector3f();
@@ -26,7 +26,7 @@ public class CameraController extends Controller implements ActionListener {
     private static final float MAX_TARGET = 10;
     private float mTargetDistance = 5;
 
-    public CameraController(Camera camera, InputManager inputManager) {
+    public LocalPlayerCreatureIntelligence(Camera camera, InputManager inputManager) {
         mCamera = camera;
 
         inputManager.addListener(this, "left");
@@ -91,7 +91,7 @@ public class CameraController extends Controller implements ActionListener {
      * camera, and any character under direct control.
      */
     @Override
-    public void control(double localTime, ControlMessage control, ChatMessage chat) {
+    public void queryDesiredAction(double localTime, DesiredActionMessage control, ChatMessage chat) {
         float angles[] = mCamera.getRotation().toAngles(null);
         control.pitch = angles[2];
         control.heading = angles[0];
@@ -128,7 +128,7 @@ public class CameraController extends Controller implements ActionListener {
     }
 
     @Override
-    public void response(Vector3f pos) {
+    public void processAftermath(Vector3f pos) {
         mCamera.setLocation(pos);
     }
 }

@@ -31,6 +31,10 @@ import java.util.concurrent.TimeUnit;
  * complete.
  */
 
+interface ChunkProvider {
+    public Chunk getChunkToProcess() throws InterruptedException;
+}
+
 public class ChunkManager implements ChunkProvider, ChunkProcessor {
     public static long startTime;
 

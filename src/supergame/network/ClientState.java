@@ -3,22 +3,23 @@ package supergame.network;
 import com.esotericsoftware.kryonet.Server;
 
 import supergame.ChunkIndex;
-import supergame.character.Character;
+import supergame.character.Creature;
+import supergame.character.CreatureIntelligence;
 import supergame.network.Structs.ChunkMessage;
 import supergame.network.Structs.StartMessage;
 
 import java.util.HashMap;
 
 public class ClientState {
-    public final Character mCharacter;
+    public final Creature mCreature;
 
-    private final int mCharacterId;
+    private final int mCreatureId;
     private String mName = null;
     private final HashMap<ChunkIndex, ChunkMessage> mChunksToSync = new HashMap<ChunkIndex, ChunkMessage>();
 
-    public ClientState(ServerEntityManager server, int connectionId) {
-        mCharacter = new Character(0f, 40f, 0f);
-        mCharacterId = server.registerEntity(mCharacter);
+    public ClientState(ServerEntityManager server, int connectionId, CreatureIntelligence intelligence) {
+        mCreature = new Creature(0f, 40f, 0f, intelligence);
+        mCreatureId = server.registerEntity(mCreature);
 
         if (connectionId < 1) {
             return;
@@ -26,7 +27,7 @@ public class ClientState {
 
         // tell client their character ID
         StartMessage m = new StartMessage();
-        m.characterEntity = mCharacterId;
+        m.characterEntity = mCreatureId;
         ((Server)server.mEndPoint).sendToTCP(connectionId, m);
     }
 
@@ -53,7 +54,7 @@ public class ClientState {
 
     public void disconnect(ServerEntityManager server) {
         // Client has disconnected.
-        server.unregisterEntity(mCharacterId);
+        server.unregisterEntity(mCreatureId);
     }
 
     public void setName(String name) {

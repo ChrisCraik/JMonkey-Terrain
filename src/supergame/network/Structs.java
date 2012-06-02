@@ -30,7 +30,7 @@ public class Structs {
         public String s = null;
     }
 
-    public static class ControlMessage {
+    public static class DesiredActionMessage {
         public double timestamp;
         public float x;
         public float z;

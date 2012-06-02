@@ -4,8 +4,7 @@ package supergame.network;
 import com.esotericsoftware.kryonet.Client;
 
 import supergame.Config;
-import supergame.SuperSimpleApplication;
-import supergame.character.Character;
+import supergame.character.Creature;
 import supergame.modify.ChunkModifier;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
@@ -100,14 +99,14 @@ public class ClientEntityManager extends EntityManager {
     private double mClockCorrection = Double.MAX_VALUE;
 
     @Override
-    protected void queryIntents(double localTime) {
+    protected void queryDesiredActions(double localTime) {
         // send control info to server
         if (mEntityMap.containsKey(mLocalCharId)) {
-            Character localChar = (Character)mEntityMap.get(mLocalCharId);
-            localChar.setController(SuperSimpleApplication.sCamera);
-            ((Client)mEndPoint).sendUDP(localChar.getControl());
+            Creature localCreature = (Creature)mEntityMap.get(mLocalCharId);
+            // TODO: set creature intelligence
+            ((Client)mEndPoint).sendUDP(localCreature.getControl());
 
-            ChatMessage chat = localChar.getChat();
+            ChatMessage chat = localCreature.getChat();
             if (chat != null && chat.s != null) {
                 System.err.println("Sending chat to server:" + chat.s);
                 ((Client)mEndPoint).sendTCP(chat);
@@ -150,8 +149,8 @@ public class ClientEntityManager extends EntityManager {
 
         // move local char
         if (mEntityMap.containsKey(mLocalCharId)) {
-            Character localChar = (Character)mEntityMap.get(mLocalCharId);
-            localChar.setupMove(localTime);
+            Creature localChar = (Creature)mEntityMap.get(mLocalCharId);
+            localChar.queryDesiredAction(localTime);
         }
     }
 
@@ -160,17 +159,17 @@ public class ClientEntityManager extends EntityManager {
         // for each character, sample interpolation window
         for (Integer key : mEntityMap.keySet()) {
             Entity value = mEntityMap.get(key);
-            if (value instanceof Character) {
+            if (value instanceof Creature) {
                 float bias = (key == mLocalCharId) ? 1.0f : 0.5f;
-                Character c = (Character)value;
+                Creature c = (Creature)value;
                 c.sample(localTime + mClockCorrection - Config.SAMPLE_DELAY, bias);
             }
         }
 
         // update controller with local position
         if (mEntityMap.containsKey(mLocalCharId)) {
-            Character localChar = (Character)mEntityMap.get(mLocalCharId);
-            localChar.postMove();
+            Creature localChar = (Creature)mEntityMap.get(mLocalCharId);
+            localChar.processAftermath();
         }
     }
 }

@@ -68,6 +68,10 @@ public class Game extends AbstractAppState implements ScreenController {
 
     @Override
     public void update(float tpf) {
+        if (mEntityManager != null) {
+            mEntityManager.processAftermath(mLocalTime);
+        }
+
         mLocalTime += tpf;
 
         mChunkManager.updateWithPosition(0, 0, 0);
@@ -97,10 +101,6 @@ public class Game extends AbstractAppState implements ScreenController {
 
     @Override
     public void render(com.jme3.renderer.RenderManager rm) {
-        // TODO: handle physics executing in parallel to render
-        if (mEntityManager != null) {
-            mEntityManager.processAftermath(mLocalTime);
-        }
     }
 
     // ScreenController methods

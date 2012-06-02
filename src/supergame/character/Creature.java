@@ -9,21 +9,21 @@ import supergame.Config;
 import supergame.gui.Game;
 import supergame.network.PiecewiseLerp;
 import supergame.network.Structs.ChatMessage;
-import supergame.network.Structs.ControlMessage;
+import supergame.network.Structs.DesiredActionMessage;
 import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
 
 /**
- * A Character represents a creature in the game world. It is controlled by a
- * {@link Controller} which provides it's desire. The {@link Controller} defines
- * which item the Character tries to use and when, desired movement direction,
- * and even spoken text.
+ * A creature in the game world. It is controlled by a
+ * {@link CreatureIntelligence} which provides it's desire. The
+ * {@link CreatureIntelligence} defines which item the creature tries to use and
+ * when, desired movement direction, and even spoken text.
  */
-public class Character extends Entity {
+public class Creature extends Entity {
 
     private final static int LERP_FIELDS = 5;
 
-    public static class CharacterData extends EntityData {
+    public static class CreatureData extends EntityData {
         // state for any given character that the server sends to the client
         float array[] = new float[LERP_FIELDS]; // x,y,z, heading, pitch
     }
@@ -34,8 +34,8 @@ public class Character extends Entity {
     private final Equipment mEquipment = new Equipment();
 
     private final CharacterControl mCharacterControl;
-    private Controller mController = null;
-    private ControlMessage mControlMessage = new ControlMessage();
+    private final CreatureIntelligence mIntelligence;
+    private DesiredActionMessage mDesiredActionMessage = new DesiredActionMessage();
     private final ChatMessage mChatMessage = new ChatMessage();
     private final PiecewiseLerp mStateLerp = new PiecewiseLerp(Config.CHAR_STATE_SAMPLES);
 
@@ -43,7 +43,7 @@ public class Character extends Entity {
     // queried outside of the functions that set them.
     private final Vector3f mPosition = new Vector3f();
 
-    public Character(float x, float y, float z) {
+    public Creature(float x, float y, float z, CreatureIntelligence intelligence) {
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 2f, 1);
         mCharacterControl = new CharacterControl(capsuleShape, 0.05f);
         mCharacterControl.setJumpSpeed(20);
@@ -52,42 +52,35 @@ public class Character extends Entity {
         mCharacterControl.setPhysicsLocation(new Vector3f(x, y, z));
         Game.registerPhysics(mCharacterControl);
 
+        mIntelligence = intelligence;
+
         // TODO: make node, add mCharacterControl as its control
     }
 
-    public void processControl(boolean localToolsAllowed) {
-        // TODO: move something renderable in place of the character
-        mEquipment.processControl(mPosition, mControlMessage, localToolsAllowed);
-    }
-
-    public void setController(Controller c) {
-        mController = c;
-    }
-
-    public void setControlMessage(ControlMessage message) {
+    public void setControlMessage(DesiredActionMessage message) {
         // FIXME: handle out of order messages
 
         // FIXME: only allow on server side, for remote players
-        mControlMessage = message;
+        mDesiredActionMessage = message;
     }
 
     public void setChatMessage(ChatMessage chat) {
         mChatMessage.s = chat.s;
     }
 
-    public void setupMove(double localTime) {
-        if (mController != null) {
+    public void queryDesiredAction(double localTime) {
+        if (mIntelligence != null) {
             // local controller
-            mController.control(localTime, mControlMessage, mChatMessage);
+            mIntelligence.queryDesiredAction(localTime, mDesiredActionMessage, mChatMessage);
         }
-        mHeading = mControlMessage.heading;
-        mPitch = mControlMessage.pitch;
+        mHeading = mDesiredActionMessage.heading;
+        mPitch = mDesiredActionMessage.pitch;
 
-        Vector3f walkDirection = new Vector3f(mControlMessage.x, 0, mControlMessage.z);
+        Vector3f walkDirection = new Vector3f(mDesiredActionMessage.x, 0, mDesiredActionMessage.z);
         if (walkDirection.length() > 1f)
             walkDirection.normalize();
 
-        if (mControlMessage.jump) {
+        if (mDesiredActionMessage.jump) {
             mCharacterControl.jump();
         }
 
@@ -95,25 +88,30 @@ public class Character extends Entity {
         mCharacterControl.setWalkDirection(walkDirection);
     }
 
-    public void postMove() {
+    public void processDesiredAction(boolean localToolsAllowed) {
+        // TODO: move something renderable in place of the character
+        mEquipment.processDesiredAction(mPosition, mDesiredActionMessage, localToolsAllowed);
+    }
+
+    public void processAftermath() {
         mCharacterControl.getPhysicsLocation(mPosition);
 
-        if (mController != null) {
-            mController.response(mPosition);
+        if (mIntelligence != null) {
+            mIntelligence.processAftermath(mPosition);
         }
     }
 
     @Override
     public void apply(double serverTime, EntityData packet) {
         // store position / look angles into interpolation window
-        assert (packet instanceof CharacterData);
-        CharacterData data = (CharacterData) packet;
+        assert (packet instanceof CreatureData);
+        CreatureData data = (CreatureData) packet;
         mStateLerp.addSample(serverTime, data.array);
     }
 
     @Override
     public EntityData getState() {
-        CharacterData d = new CharacterData();
+        CreatureData d = new CreatureData();
         // FIXME: use final ints to index into array
         d.array[0] = mPosition.x;
         d.array[1] = mPosition.y;
@@ -136,8 +134,8 @@ public class Character extends Entity {
         mCharacterControl.setPhysicsLocation(pos);
     }
 
-    public ControlMessage getControl() {
-        return mControlMessage;
+    public DesiredActionMessage getControl() {
+        return mDesiredActionMessage;
     }
 
     public ChatMessage getChat() {

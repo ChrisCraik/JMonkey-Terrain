@@ -12,8 +12,8 @@ import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.system.AppSettings;
 
 import de.lessvoid.nifty.Nifty;
-import supergame.character.CameraController;
-import supergame.character.Controller;
+import supergame.character.LocalPlayerCreatureIntelligence;
+import supergame.character.CreatureIntelligence;
 import supergame.gui.Game;
 
 import java.util.logging.Logger;
@@ -33,7 +33,7 @@ public class SuperSimpleApplication extends SimpleApplication {
     }
 
     //TODO: rename to cameracontroller
-    public static Controller sCamera = null;
+    public static CreatureIntelligence sCamera = null;
 
     public void setMouseMenuMode(boolean menuMode) {
         flyCam.setEnabled(!menuMode);
@@ -66,7 +66,7 @@ public class SuperSimpleApplication extends SimpleApplication {
         Logger.getLogger("").setLevel(Config.LOG_LEVEL);
         assetManager.registerLocator( "./assets/", FileLocator.class.getName() );
         initInputMappings();
-        sCamera = new CameraController(cam, inputManager);
+        sCamera = new LocalPlayerCreatureIntelligence(cam, inputManager);
 
         viewPort.setBackgroundColor(new ColorRGBA(0.5f, 0.5f, 1, 1));
 
