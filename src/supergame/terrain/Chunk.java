@@ -128,24 +128,12 @@ public class Chunk {
 
     private Geometry mGeometry = null;
     public boolean serial_createGeometry(Material mat, Node parent, PhysicsRegistrar registrar) {
-        if (mIsEmpty || mGeometry != null)
+        if (mIsEmpty || mGeometry.getMaterial() != null)
             return false;
 
-        String chunkName = "Chunk" + mIndex.toString();
-
-        Mesh m = new Mesh();
-        m.setBuffer(Type.Index, 1, mChunkIntIndices.asIntBuffer());
-        m.setBuffer(Type.Position, 3, mChunkVertices.asFloatBuffer());
-        m.setBuffer(Type.Normal, 3, mChunkNormals.asFloatBuffer());
-        m.updateBound();
-
-        mGeometry = new Geometry(chunkName, m);
         mGeometry.setMaterial(mat);
         parent.attachChild(mGeometry);
 
-        CollisionShape shape = CollisionShapeFactory.createMeshShape(mGeometry);
-        RigidBodyControl control = new RigidBodyControl(shape, 0);
-        mGeometry.addControl(control);
         registrar.registerPhysics(mGeometry);
 
         return true;
@@ -324,6 +312,21 @@ public class Chunk {
         return false;
     }
 
+    private void parallel_createGeometryAndPhysics() {
+        String chunkName = "Chunk" + mIndex.toString();
+        Mesh m = new Mesh();
+        m.setBuffer(Type.Index, 1, mChunkIntIndices.asIntBuffer());
+        m.setBuffer(Type.Position, 3, mChunkVertices.asFloatBuffer());
+        m.setBuffer(Type.Normal, 3, mChunkNormals.asFloatBuffer());
+        m.updateBound();
+
+        mGeometry = new Geometry(chunkName, m);
+
+        CollisionShape shape = CollisionShapeFactory.createMeshShape(mGeometry);
+        RigidBodyControl control = new RigidBodyControl(shape, 0);
+        mGeometry.addControl(control);
+    }
+
     private void parallel_processSetEmpty(WorkerBuffers buffers) {
         if (!parallel_processCalcWeights(buffers)) {
             // if weights all negative or positive, no geometry
@@ -338,7 +341,8 @@ public class Chunk {
         // save polys in bytebuffers for rendering/physics
         parallel_processSaveGeometry(buffers);
 
-        //parallel_processPhysics();
+        // create Geometry and physics objects
+        parallel_createGeometryAndPhysics();
         mIsEmpty = false; // flag tells main loop that chunk can be used
     }
 
@@ -364,11 +368,11 @@ public class Chunk {
         if (mModifyComplete == null) {
             // Weights aren't modified, so don't save them since they can be
             // regenerated
-            this.mModifiedWeights = null;
+            mModifiedWeights = null;
         } else {
             // Because the weights have been modified, they can't be regenerated
             // from the TerrainGenerator, so we save them.
-            this.mModifiedWeights = buffers.weights;
+            mModifiedWeights = buffers.weights;
             buffers.weights = new float[Config.CHUNK_DIVISION + 2][Config.CHUNK_DIVISION + 2][Config.CHUNK_DIVISION + 2];
 
             mModifyComplete.chunkCompletion(this);
