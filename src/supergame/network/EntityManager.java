@@ -9,7 +9,6 @@ import com.esotericsoftware.kryonet.Listener;
 
 import org.lwjgl.BufferUtils;
 
-import supergame.ChunkIndex;
 import supergame.character.Creature;
 import supergame.character.Creature.CreatureData;
 import supergame.network.Structs.ChatMessage;
@@ -19,6 +18,7 @@ import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
 import supergame.network.Structs.StartMessage;
 import supergame.network.Structs.StateMessage;
+import supergame.terrain.ChunkIndex;
 
 import java.io.IOException;
 import java.net.Inet4Address;

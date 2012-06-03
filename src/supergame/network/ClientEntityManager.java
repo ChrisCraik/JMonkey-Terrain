@@ -5,13 +5,13 @@ import com.esotericsoftware.kryonet.Client;
 
 import supergame.Config;
 import supergame.character.Creature;
-import supergame.modify.ChunkModifier;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
 import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
 import supergame.network.Structs.StartMessage;
 import supergame.network.Structs.StateMessage;
+import supergame.terrain.modify.ChunkModifier;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -138,7 +138,7 @@ public class ClientEntityManager extends EntityManager {
                 mLocalCharId = ((StartMessage) pair.object).characterEntity;
                 System.err.println("Client sees localid, " + mLocalCharId);
             } else if (pair.object instanceof ChatMessage) {
-                ChatMessage chat = (ChatMessage) pair.object;
+                //ChatMessage chat = (ChatMessage) pair.object;
                 //TODO: chat display
                 //mChatDisplay.addChat(localTime, chat.s, Color.white);
             } else if (pair.object instanceof ChunkMessage) {

@@ -1,11 +1,14 @@
 
-package supergame;
+package supergame.terrain;
 
 import com.jme3.material.Material;
 import com.jme3.scene.Node;
 
+import supergame.Config;
+import supergame.PhysicsContent;
+import supergame.SuperSimpleApplication;
 import supergame.PhysicsContent.PhysicsRegistrar;
-import supergame.modify.ChunkModifier;
+import supergame.terrain.modify.ChunkModifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;

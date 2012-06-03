@@ -8,13 +8,13 @@ import supergame.Config;
 import supergame.SuperSimpleApplication;
 import supergame.character.ArtificialCreatureIntelligence;
 import supergame.character.Creature;
-import supergame.modify.ChunkModifier;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
 import supergame.network.Structs.DesiredActionMessage;
 import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
 import supergame.network.Structs.StateMessage;
+import supergame.terrain.modify.ChunkModifier;
 
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;

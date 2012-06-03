@@ -1,9 +1,10 @@
 
-package supergame.modify;
+package supergame.terrain.modify;
 
 import com.jme3.math.Vector3f;
 import java.util.ArrayList;
-import supergame.ChunkIndex;
+
+import supergame.terrain.ChunkIndex;
 
 public class SphereChunkModifier extends ChunkModifier {
 

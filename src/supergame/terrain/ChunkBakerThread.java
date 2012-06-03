@@ -2,7 +2,9 @@
  * Thread that aids in rendering volume data to polygons
  */
 
-package supergame;
+package supergame.terrain;
+
+import supergame.SuperSimpleApplication;
 
 public class ChunkBakerThread extends Thread {
     @SuppressWarnings("unused")

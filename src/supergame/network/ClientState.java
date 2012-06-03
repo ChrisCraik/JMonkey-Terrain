@@ -2,11 +2,11 @@ package supergame.network;
 
 import com.esotericsoftware.kryonet.Server;
 
-import supergame.ChunkIndex;
 import supergame.character.Creature;
 import supergame.character.CreatureIntelligence;
 import supergame.network.Structs.ChunkMessage;
 import supergame.network.Structs.StartMessage;
+import supergame.terrain.ChunkIndex;
 
 import java.util.HashMap;
 

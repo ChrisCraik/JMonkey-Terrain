@@ -1,5 +1,5 @@
 
-package supergame;
+package supergame.terrain;
 
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.control.RigidBodyControl;
@@ -12,9 +12,11 @@ import com.jme3.scene.Node;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.util.BufferUtils;
 
+import supergame.Config;
 import supergame.PhysicsContent.PhysicsRegistrar;
-import supergame.modify.ChunkModifierInterface;
 import supergame.network.Structs.ChunkMessage;
+import supergame.terrain.modify.ChunkModifierInterface;
+import supergame.utils.MarchingCubes;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -130,10 +132,6 @@ public class Chunk {
             return false;
 
         String chunkName = "Chunk" + mIndex.toString();
-        /*
-        System.err.println(chunkName + " has "
-               + mChunkIntIndices.capacity() / 4 + " indices");
-         */
 
         Mesh m = new Mesh();
         m.setBuffer(Type.Index, 1, mChunkIntIndices.asIntBuffer());
@@ -417,14 +415,6 @@ public class Chunk {
             if (Config.USE_AMBIENT_OCCLUSION)
                 occlusion.add(null);
         }
-    }
-    */
-
-    /*
-    private void parallel_processPhysics() {
-        mMeshId = Game.collision.getPhysics().createMesh(mChunkVertices, 4, mChunkIntIndices);
-        // meshId = Game.collision.physics.createMesh(chunkVertices, 2,
-        // chunkShortIndices);
     }
     */
 

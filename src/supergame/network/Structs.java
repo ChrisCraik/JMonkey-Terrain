@@ -1,7 +1,7 @@
 
 package supergame.network;
 
-import supergame.ChunkIndex;
+import supergame.terrain.ChunkIndex;
 
 import java.util.HashMap;
 

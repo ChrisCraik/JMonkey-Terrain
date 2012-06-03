@@ -1,5 +1,5 @@
 
-package supergame;
+package supergame.utils;
 
 import com.jme3.math.Vector3f;
 

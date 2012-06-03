@@ -15,13 +15,13 @@ import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.TextRenderer;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
-import supergame.ChunkManager;
 import supergame.PhysicsContent;
 import supergame.SuperSimpleApplication;
-import supergame.modify.ChunkCastle;
-import supergame.modify.ChunkModifier;
 import supergame.network.EntityManager;
 import supergame.network.ServerEntityManager;
+import supergame.terrain.ChunkManager;
+import supergame.terrain.modify.ChunkCastle;
+import supergame.terrain.modify.ChunkModifier;
 
 import java.util.logging.Logger;
 

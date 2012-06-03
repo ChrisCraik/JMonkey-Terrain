@@ -4,9 +4,9 @@ package supergame.character;
 import com.jme3.math.Vector3f;
 
 import supergame.SuperSimpleApplication;
-import supergame.modify.BlockChunkModifier;
-import supergame.modify.SphereChunkModifier;
 import supergame.network.Structs.DesiredActionMessage;
+import supergame.terrain.modify.BlockChunkModifier;
+import supergame.terrain.modify.SphereChunkModifier;
 
 public class Equipment {
     public static void HPVector(Vector3f vec, float heading, float pitch) {

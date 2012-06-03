@@ -1,5 +1,5 @@
 
-package supergame.modify;
+package supergame.terrain.modify;
 
 import com.jme3.math.Vector3f;
 

@@ -1,7 +1,9 @@
 
-package supergame;
+package supergame.terrain;
 
 import com.jme3.math.Vector3f;
+
+import supergame.utils.Perlin;
 
 public class TerrainGenerator {
 

@@ -1,11 +1,11 @@
 
-package supergame.modify;
+package supergame.terrain.modify;
 
-import supergame.Chunk;
-import supergame.ChunkIndex;
-import supergame.ChunkProcessor;
 import supergame.Config;
 import supergame.network.Structs.ChunkMessage;
+import supergame.terrain.Chunk;
+import supergame.terrain.ChunkIndex;
+import supergame.terrain.ChunkProcessor;
 
 import java.util.ArrayList;
 import java.util.Collections;

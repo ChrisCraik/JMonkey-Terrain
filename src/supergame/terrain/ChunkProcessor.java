@@ -1,5 +1,5 @@
 
-package supergame;
+package supergame.terrain;
 
 import java.util.ArrayList;
 
