@@ -48,7 +48,7 @@ public class Creature extends Entity {
     private final Vector3f mPosition = new Vector3f();
 
     public Creature(float x, float y, float z, CreatureIntelligence intelligence) {
-        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1, 2, 1);
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1, 2);
         mCharacterControl = new CharacterControl(capsuleShape, 0.05f);
         mCharacterControl.setJumpSpeed(20);
         mCharacterControl.setFallSpeed(30);
