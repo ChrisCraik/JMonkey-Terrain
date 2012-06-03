@@ -12,13 +12,11 @@ import supergame.network.Structs.DesiredActionMessage;
 public class ArtificialCreatureIntelligence extends CreatureIntelligence {
     @Override
     public void queryDesiredAction(double localTime, DesiredActionMessage control, ChatMessage chat) {
-        control.x = (float) Math.sin(localTime / 400.0) / 4;
-        control.z = (float) Math.cos(localTime / 400.0) / 4;
-        System.err.println(this + "moving AI x " + control.x + ", z " + control.z);
+        control.x = (float) Math.sin(localTime) / 4;
+        control.z = (float) Math.cos(localTime) / 4;
     }
 
     @Override
     public void processAftermath(Vector3f pos) {
-        System.err.println(this + " at " + pos);
     }
 }

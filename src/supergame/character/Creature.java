@@ -4,6 +4,8 @@ package supergame.character;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.shape.Box;
 
 import supergame.Config;
 import supergame.gui.Game;
@@ -33,24 +35,33 @@ public class Creature extends Entity {
 
     private final Equipment mEquipment = new Equipment();
 
-    private final CharacterControl mCharacterControl;
     private final CreatureIntelligence mIntelligence;
     private DesiredActionMessage mDesiredActionMessage = new DesiredActionMessage();
     private final ChatMessage mChatMessage = new ChatMessage();
     private final PiecewiseLerp mStateLerp = new PiecewiseLerp(Config.CHAR_STATE_SAMPLES);
+
+    private final CharacterControl mCharacterControl;
+    private final Geometry mGeometry;
 
     // temporary vectors used for intermediate calculations. should not be
     // queried outside of the functions that set them.
     private final Vector3f mPosition = new Vector3f();
 
     public Creature(float x, float y, float z, CreatureIntelligence intelligence) {
-        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 2f, 1);
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1, 2, 1);
         mCharacterControl = new CharacterControl(capsuleShape, 0.05f);
         mCharacterControl.setJumpSpeed(20);
         mCharacterControl.setFallSpeed(30);
         mCharacterControl.setGravity(30);
         mCharacterControl.setPhysicsLocation(new Vector3f(x, y, z));
         Game.registerPhysics(mCharacterControl);
+
+        // create renderable geometry
+        Box box = new Box(Vector3f.ZERO, 1, 2, 1);
+        mGeometry = new Geometry("creature", box);
+        mGeometry.setMaterial(Game.getCharacterMaterial());
+        //g.addControl(mCharacterControl);
+        Game.addCreatureGeometry(mGeometry);
 
         mIntelligence = intelligence;
 
@@ -95,6 +106,7 @@ public class Creature extends Entity {
 
     public void processAftermath() {
         mCharacterControl.getPhysicsLocation(mPosition);
+        mGeometry.setLocalTranslation(mPosition);
 
         if (mIntelligence != null) {
             mIntelligence.processAftermath(mPosition);

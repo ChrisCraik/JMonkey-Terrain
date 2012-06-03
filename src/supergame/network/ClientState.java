@@ -18,7 +18,7 @@ public class ClientState {
     private final HashMap<ChunkIndex, ChunkMessage> mChunksToSync = new HashMap<ChunkIndex, ChunkMessage>();
 
     public ClientState(ServerEntityManager server, int connectionId, CreatureIntelligence intelligence) {
-        mCreature = new Creature(0f, 40f, 0f, intelligence);
+        mCreature = new Creature(0, 40, 0, intelligence);
         mCreatureId = server.registerEntity(mCreature);
 
         if (connectionId < 1) {

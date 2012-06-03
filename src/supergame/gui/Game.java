@@ -6,6 +6,8 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 
 import de.lessvoid.nifty.Nifty;
 import de.lessvoid.nifty.NiftyEventSubscriber;
@@ -38,6 +40,28 @@ public class Game extends AbstractAppState implements ScreenController {
 
     public static void registerPhysics(Object obj) {
         sInstance.mPhysicsContent.getRegistrar().registerPhysics(obj);
+    }
+
+    private static Material sCreatureMaterial = null;
+    public static Material getCharacterMaterial() {
+        if (sCreatureMaterial == null) {
+            sCreatureMaterial = new Material(sInstance.mApp.getAssetManager(),
+                    "Common/MatDefs/Light/Lighting.j3md");
+            sCreatureMaterial.setBoolean("m_UseMaterialColors", true);
+            sCreatureMaterial.setColor("m_Ambient", ColorRGBA.Green);
+            sCreatureMaterial.setColor("m_Diffuse", ColorRGBA.Green);
+        }
+        return sCreatureMaterial;
+    }
+
+    private static Node sCreatureRoot = null;
+    public static void addCreatureGeometry(Geometry creatureGeomNode) {
+        if (sCreatureRoot == null) {
+            sCreatureRoot = new Node("creature root");
+            sInstance.mApp.getRootNode().attachChild(sCreatureRoot);
+        }
+
+        sCreatureRoot.attachChild(creatureGeomNode);
     }
 
     // AppState methods

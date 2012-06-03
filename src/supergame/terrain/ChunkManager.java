@@ -5,8 +5,6 @@ import com.jme3.material.Material;
 import com.jme3.scene.Node;
 
 import supergame.Config;
-import supergame.PhysicsContent;
-import supergame.SuperSimpleApplication;
 import supergame.PhysicsContent.PhysicsRegistrar;
 import supergame.terrain.modify.ChunkModifier;
 
@@ -183,10 +181,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         mLastY = y;
         mLastZ = z;
 
-        SuperSimpleApplication.PROFILE("pos update");
-
         sweepNearby(x, y, z, 1, true);
-        SuperSimpleApplication.PROFILE("loc chunk stall");
 
         System.out.println("NOW " + mChunks.size() + " CHUNKS EXIST.");
     }

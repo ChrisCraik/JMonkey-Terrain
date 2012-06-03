@@ -12,25 +12,13 @@ import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.system.AppSettings;
 
 import de.lessvoid.nifty.Nifty;
-import supergame.character.LocalPlayerCreatureIntelligence;
 import supergame.character.CreatureIntelligence;
+import supergame.character.LocalPlayerCreatureIntelligence;
 import supergame.gui.Game;
 
 import java.util.logging.Logger;
 
 public class SuperSimpleApplication extends SimpleApplication {
-    private static long getTimeMillis() {
-        //return (Sys.getTime() * 1000) / Sys.getTimerResolution();
-        return 0;
-    }
-
-    private static long mLastProfMillis = 0;
-    public static void PROFILE(String label) {
-        long tempTime = getTimeMillis();
-        if (tempTime - mLastProfMillis > 20)
-            System.out.printf("%20s: %d\n", label + " took", (tempTime - mLastProfMillis));
-        mLastProfMillis = tempTime;
-    }
 
     //TODO: rename to cameracontroller
     public static CreatureIntelligence sCamera = null;
