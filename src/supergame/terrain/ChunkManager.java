@@ -17,12 +17,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * The ChunkManager holds all of the chunks in the engine and serves two main
  * purposes
- *
+ * <p>
  * 1 - To generate chunks surrounding the player, so that a player always has
  * terrain around them. This is managed through a HashMap of ChunkIndex to
  * chunk, where every time the player moves from one chunk to another, the chunk
  * manager creates any chunks now within CHUNK_LOAD_DISTANCE of the player
- *
+ * <p>
  * 2 - To generate chunk replacements as the terrain is modified - from
  * building, digging, explosions or otherwise. This is done my creating a
  * ChunkModifier for each modification, and calling the static step method each
@@ -37,8 +37,6 @@ interface ChunkProvider {
 }
 
 public class ChunkManager implements ChunkProvider, ChunkProcessor {
-    public static long startTime;
-
     private long mLastX, mLastY, mLastZ;
 
     private final HashMap<ChunkIndex, Chunk> mChunks;
@@ -67,8 +65,6 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         for (int i = 0; i < Config.WORKER_THREADS; i++)
             new ChunkBakerThread(i, this).start();
 
-        startTime = 0;//Sys.getTime();
-
         sweepNearby(x, y, z, 2, false);
         sweepNearby(x, y, z, mLoadDistance, false);
     }
@@ -81,7 +77,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
                         // Stall until chunk processed
                         Chunk localChunk = mChunks.get(new ChunkIndex(x + i, y + j, z + k));
                         while (!localChunk.processingIsComplete()) {}
-                        localChunk.serial_createGeometry(mMaterial, mParent, mPhysicsRegistrar);
+                        localChunk.serial_attachGeometry(mMaterial, mParent, mPhysicsRegistrar);
                     } else {
                         // prioritize the chunk
                         prioritizeChunk(x + i, y + j, z + k);
@@ -137,7 +133,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         ChunkModifier.step(this);
 
         // create geometry as needed from chunks finished processing
-        createGeometry();
+        attachGeometry();
     }
 
     private void processPosition(long x, long y, long z) {
@@ -186,14 +182,9 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         System.out.println("NOW " + mChunks.size() + " CHUNKS EXIST.");
     }
 
-    private void createGeometry() {
-        int max = 4;
+    private void attachGeometry() {
         for (Chunk c : mChunks.values()) {
-            if (c.serial_createGeometry(mMaterial, mParent, mPhysicsRegistrar))
-                max--;
-
-            // TODO: why does this cause flickering?
-            if (max == 0 && false) return;
+            c.serial_attachGeometry(mMaterial, mParent, mPhysicsRegistrar);
         }
     }
 
@@ -223,8 +214,9 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
                 System.exit(1);
             }
 
-            if (!oldChunk.processingIsComplete())
+            if (!oldChunk.processingIsComplete()) {
                 oldChunk.cancelParallelProcessing();
+            }
             oldChunk.serial_clean();
 
             mChunks.put(i, newChunk);

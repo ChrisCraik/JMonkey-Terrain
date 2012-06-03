@@ -127,16 +127,18 @@ public class Chunk {
     }
 
     private Geometry mGeometry = null;
-    public boolean serial_createGeometry(Material mat, Node parent, PhysicsRegistrar registrar) {
+
+    public void serial_attachGeometry(Material mat, Node parent, PhysicsRegistrar registrar) {
+        // if the chunk doesn't have content, it's empty or not done
+        // if geometry has a material, it's already been attached
         if (mIsEmpty || mGeometry.getMaterial() != null)
-            return false;
+            return;
 
         mGeometry.setMaterial(mat);
         parent.attachChild(mGeometry);
 
         registrar.registerPhysics(mGeometry);
-
-        return true;
+        return;
     }
 
     public void serial_clean() {
