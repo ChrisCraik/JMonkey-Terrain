@@ -93,8 +93,8 @@ public class LocalPlayerCreatureIntelligence extends CreatureIntelligence implem
     @Override
     public void queryDesiredAction(double localTime, DesiredActionMessage control, ChatMessage chat) {
         float angles[] = mCamera.getRotation().toAngles(null);
-        control.pitch = angles[2];
-        control.heading = angles[0];
+        control.pitch = - (float) (angles[0] * 180 / Math.PI);
+        control.heading =  - (float) (angles[1] * 180 / Math.PI);
 
         // TODO: early return if chatting
 

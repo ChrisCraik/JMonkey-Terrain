@@ -17,6 +17,7 @@ import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.TextRenderer;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
+import supergame.Config;
 import supergame.PhysicsContent;
 import supergame.SuperSimpleApplication;
 import supergame.network.EntityManager;
@@ -85,8 +86,8 @@ public class Game extends AbstractAppState implements ScreenController {
         mat.setBoolean("m_UseMaterialColors", true);
         mat.setColor("m_Ambient", ColorRGBA.Brown);
         mat.setColor("m_Diffuse", ColorRGBA.Brown);
-        mChunkManager = new ChunkManager(0, 0, 0, 8, mat,
-                mApp.getRootNode(), mPhysicsContent.getRegistrar());
+        mChunkManager = new ChunkManager(0, 0, 0, Config.CHUNK_LOAD_DISTANCE,
+                mat, mApp.getRootNode(), mPhysicsContent.getRegistrar());
         ChunkCastle.create();
     }
 

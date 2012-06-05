@@ -138,7 +138,6 @@ public class Chunk {
         parent.attachChild(mGeometry);
 
         registrar.registerPhysics(mGeometry);
-        return;
     }
 
     public void serial_clean() {

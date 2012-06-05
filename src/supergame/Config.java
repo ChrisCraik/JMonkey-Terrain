@@ -4,6 +4,7 @@ import java.util.logging.Level;
 
 public class Config {
     public static final int CHUNK_DIVISION = 16;
+    public static final int CHUNK_LOAD_DISTANCE = 6;
     public static final int WORKER_THREADS = 2;
     public static final int FRAME_RATE_CAP = 60;
 

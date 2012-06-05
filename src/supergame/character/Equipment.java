@@ -33,11 +33,11 @@ public class Equipment {
     private static float mSecondsSinceShoot = 0;
 
     public void processDesiredAction(Vector3f position, DesiredActionMessage message, boolean localToolsAllowed) {
-        HPVector(mTargetDir, 180 - message.heading, message.pitch);
+        HPVector(mTargetDir, message.heading, message.pitch);
 
         mTargetPos.set(mTargetDir);
-        mTargetPos.mult(message.targetDistance);
-        mTargetPos.add(position);
+        mTargetPos.multLocal(message.targetDistance);
+        mTargetPos.addLocal(position);
 
         // align the target to a voxel
         mTargetVoxelPos.set(
@@ -80,8 +80,6 @@ public class Equipment {
             if (message.use1) {
                 increment *= -1;
             }
-
-            System.err.println("processing tool " + message.toolSelection);
 
             switch (message.toolSelection) {
                 case (TROWEL):
