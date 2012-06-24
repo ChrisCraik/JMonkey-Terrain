@@ -132,13 +132,14 @@ public class Chunk {
         registrar.registerPhysics(mGeometry);
     }
 
-    public void serial_clean() {
+    public void serial_clean(PhysicsRegistrar registrar) {
         if (!mIsEmpty) {
             mChunkVertices = null;
             mChunkNormals = null;
             mChunkIntIndices = null;
             mChunkShortIndices = null;
             if (mGeometry != null) {
+                registrar.unregisterPhysics(mGeometry);
                 // TODO: unregester physics
                 mGeometry.removeFromParent();
             }

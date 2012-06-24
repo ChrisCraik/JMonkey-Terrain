@@ -20,6 +20,7 @@ public class PhysicsContent {
 
     public abstract class PhysicsRegistrar {
         public abstract void registerPhysics(Object obj);
+        public abstract void unregisterPhysics(Object obj);
     };
     public PhysicsRegistrar getRegistrar() { return mRegistrar; }
 
@@ -51,6 +52,10 @@ public class PhysicsContent {
             @Override
             public void registerPhysics(Object obj) {
                 mBulletAppState.getPhysicsSpace().add(obj);
+            }
+            @Override
+            public void unregisterPhysics(Object obj) {
+                mBulletAppState.getPhysicsSpace().remove(obj);
             }
         };
     }

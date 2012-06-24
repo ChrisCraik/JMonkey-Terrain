@@ -7,6 +7,6 @@ import supergame.terrain.Chunk;
 
 public interface ChunkModifierInterface {
     public float getModification(Vector3f p, float current);
-    
+
     public void chunkCompletion(Chunk c);
 }

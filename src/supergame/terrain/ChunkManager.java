@@ -117,7 +117,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         if (c != null) {
             if (!c.processingIsComplete())
                 c.cancelParallelProcessing();
-            c.serial_clean();
+            c.serial_clean(mPhysicsRegistrar);
             mChunks.remove(key);
         }
 
@@ -217,7 +217,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
             if (!oldChunk.processingIsComplete()) {
                 oldChunk.cancelParallelProcessing();
             }
-            oldChunk.serial_clean();
+            oldChunk.serial_clean(mPhysicsRegistrar);
 
             mChunks.put(i, newChunk);
         }
