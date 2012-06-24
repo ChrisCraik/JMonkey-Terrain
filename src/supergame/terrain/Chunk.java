@@ -65,7 +65,6 @@ public class Chunk {
     private Vector3f mPosition; // cube's origin (not center)
 
     private float mModifiedWeights[][][] = null;
-    HashMap<Integer, Vector3f> mModifyNormals = null; // TODO: turn this into a workers buffer array
     private Chunk mModifiedParent = null;
     private final ChunkModifierInterface mModifyComplete;
 
@@ -158,6 +157,7 @@ public class Chunk {
         public int[] indices = new int[15 * Config.CHUNK_DIVISION * Config.CHUNK_DIVISION * Config.CHUNK_DIVISION];
         public int indicesIntCount;
         public int[][][][] vertIndexVolume = new int[Config.CHUNK_DIVISION + 2][Config.CHUNK_DIVISION + 2][Config.CHUNK_DIVISION + 2][3];
+        public HashMap<Integer, Vector3f> normals = new HashMap<Integer, Vector3f>();
     }
 
     public static Object parallel_workerBuffersInit() {
@@ -180,20 +180,22 @@ public class Chunk {
                 mModifyComplete)) {
             return;
         }
-        
-        // calculate polys and normals
-        if (mModifyComplete != null) {
-            mModifyNormals = new HashMap<Integer, Vector3f>();
-        }
-        if (!ChunkUtils.calculateGeometry(buffers, mPosition, mModifyNormals))
+
+        // calculate triangles
+        if (!ChunkUtils.calculateTriangles(buffers, mPosition))
             return;
+        
+        // if chunk is modified, have to brute force calculate normals
+        if (mModifyComplete != null) {
+            ChunkUtils.calculateNormals(buffers);
+        }
         
         // save polys in bytebuffers for rendering/physics
         mChunkVertices = BufferUtils.createByteBuffer(buffers.verticesFloatCount * 4);
         mChunkNormals = BufferUtils.createByteBuffer(buffers.verticesFloatCount * 4);
         mChunkShortIndices = BufferUtils.createByteBuffer(buffers.indicesIntCount * 2);
         mChunkIntIndices = BufferUtils.createByteBuffer(buffers.indicesIntCount * 4);
-        ChunkUtils.storeGeometry(buffers, mModifyNormals, mChunkVertices, mChunkNormals,
+        ChunkUtils.storeTrianglesAndNormals(buffers, mChunkVertices, mChunkNormals,
                 mChunkShortIndices, mChunkIntIndices);
 
         // create Geometry and physics objects
@@ -214,6 +216,7 @@ public class Chunk {
 
         buffers.verticesFloatCount = 0;
         buffers.indicesIntCount = 0;
+        buffers.normals.clear();
 
         parallel_processSetEmpty(buffers);
 

@@ -10,7 +10,6 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 
 import supergame.Config;
 import supergame.terrain.Chunk.WorkerBuffers;
@@ -62,8 +61,7 @@ public class ChunkUtils {
         return (negCount != 0) && (posCount != 0); // return false if empty
     }
 
-    public static boolean calculateGeometry(WorkerBuffers buffers, Vector3f position,
-            HashMap<Integer, Vector3f> modifyNormals) {
+    public static boolean calculateTriangles(WorkerBuffers buffers, Vector3f position) {
         int x, y, z;
         buffers.indicesIntCount = 0;
         buffers.verticesFloatCount = 0;
@@ -96,17 +94,11 @@ public class ChunkUtils {
             }
         }
 
-        if (buffers.verticesFloatCount == 0 || buffers.indicesIntCount == 0) {
-            return false;
-        }
-
-        calculateNormals(buffers, modifyNormals);
-
-        return true;
+        return (buffers.verticesFloatCount != 0) && (buffers.indicesIntCount != 0);
     }
     
-    public static void calculateNormals(WorkerBuffers buffers, HashMap<Integer, Vector3f> modifyNormals) {
-        if (modifyNormals == null) return;
+    public static void calculateNormals(WorkerBuffers buffers) {
+        if (buffers.normals == null) return;
         
         // manually calculate normals, because we have been modified since generation
         for (int i = 0; i < buffers.indicesIntCount; i += 3) {
@@ -126,11 +118,11 @@ public class ChunkUtils {
 
             for (int j = 0; j < 3; j++) {
                 int index = buffers.indices[i + j];
-                Vector3f normalSumForIndex = modifyNormals.get(index);
+                Vector3f normalSumForIndex = buffers.normals.get(index);
                 if (normalSumForIndex == null) {
                     // COPY first normal into hash (since the value in hash
                     // will be modified)
-                    modifyNormals.put(index, new Vector3f(normal));
+                    buffers.normals.put(index, new Vector3f(normal));
                 } else {
                     // add into normal (since they're all normalized, we can
                     // normalize the sum later to get the average)
@@ -140,10 +132,8 @@ public class ChunkUtils {
         }
     }
 
-    public static void storeGeometry(WorkerBuffers buffers,
-            HashMap<Integer, Vector3f> modifyNormals, ByteBuffer verticesBuffer,
+    public static void storeTrianglesAndNormals(WorkerBuffers buffers, ByteBuffer verticesBuffer,
             ByteBuffer normalsBuffer, ByteBuffer shortIndicesBuffer, ByteBuffer intIndicesBuffer) {
-
         Vector3f normal = new Vector3f(0, 0, 0);
         for (int i = 0; i < buffers.verticesFloatCount; i += 3) {
             float vx = buffers.vertices[i + 0];
@@ -154,8 +144,8 @@ public class ChunkUtils {
             verticesBuffer.putFloat(vy);
             verticesBuffer.putFloat(vz);
 
-            if (modifyNormals != null && modifyNormals.containsKey(i)) {
-                normal = modifyNormals.get(i).normalize();
+            if (buffers.normals.containsKey(i)) {
+                normal = buffers.normals.get(i).normalize();
             } else {
                 TerrainGenerator.getNormal(vx, vy, vz, normal);
             }
