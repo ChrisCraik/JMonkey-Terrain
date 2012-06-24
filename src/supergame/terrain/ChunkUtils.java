@@ -27,7 +27,7 @@ public class ChunkUtils {
      * @param weights The input/output weight data
      * @param skipGeneration If true, the weights have already been calculated
      *            by a previous generation, (but haven't been modified).
-     * @param position The position of the origin of the chunk
+     * @param position Origin of the chunk
      * @param modifier Modifier object that alters
      * @return False if empty.
      */
@@ -58,9 +58,15 @@ public class ChunkUtils {
                 }
             }
         }
-        return (negCount != 0) && (posCount != 0); // return false if empty
+        return (negCount != 0) && (posCount != 0);
     }
 
+    /**
+     * Generate vertices and indices from weights via MarchingCubes
+     * @param buffers Struct containing input weights, and output vertex/index lists.
+     * @param position Origin of the chunk.
+     * @return False if empty.
+     */
     public static boolean calculateTriangles(WorkerBuffers buffers, Vector3f position) {
         int x, y, z;
         buffers.indicesIntCount = 0;
@@ -87,8 +93,8 @@ public class ChunkUtils {
                     if (MarchingCubes.cubeOccupied(x, y, z, buffers.weights)) {
                         // calculate indices
                         buffers.indicesIntCount = MarchingCubes.writeLocalIndices(x, y, z,
-                                buffers.weights,
-                                buffers.indices, buffers.indicesIntCount, buffers.vertIndexVolume);
+                                buffers.weights, buffers.indices, buffers.indicesIntCount,
+                                buffers.vertIndexVolume);
                     }
                 }
             }
@@ -97,9 +103,15 @@ public class ChunkUtils {
         return (buffers.verticesFloatCount != 0) && (buffers.indicesIntCount != 0);
     }
     
+    /**
+     * Perform brute-force normal calculation, without the simpler and more
+     * efficient terrain algorithm weight sampling. This approach is required if
+     * the terrain is modified beyond its original form.
+     * 
+     * @param buffers Struct containing input vertex and index lists, as well as
+     *            output normals hashmap.
+     */
     public static void calculateNormals(WorkerBuffers buffers) {
-        if (buffers.normals == null) return;
-        
         // manually calculate normals, because we have been modified since generation
         for (int i = 0; i < buffers.indicesIntCount; i += 3) {
             Vector3f vectors[] = new Vector3f[3];
@@ -132,6 +144,19 @@ public class ChunkUtils {
         }
     }
 
+    /**
+     * Copy index, vertex, and normal lists from WorkerBuffers struct to
+     * ByteBuffers. Currently generates redundant index lists - both shorts and
+     * ints.
+     * 
+     * @param buffers Struct containing input vertex, index, and normal buffers.
+     * @param verticesBuffer Output list of vertices, three floats each.
+     * @param normalsBuffer Output list of normals each associated with a
+     *            vertex.
+     * @param shortIndicesBuffer Output list of indices, three shorts per
+     *            triangle.
+     * @param intIndicesBuffer Output list of indices, three ints per triangle.
+     */
     public static void storeTrianglesAndNormals(WorkerBuffers buffers, ByteBuffer verticesBuffer,
             ByteBuffer normalsBuffer, ByteBuffer shortIndicesBuffer, ByteBuffer intIndicesBuffer) {
         Vector3f normal = new Vector3f(0, 0, 0);
@@ -165,6 +190,15 @@ public class ChunkUtils {
         intIndicesBuffer.flip();
     }
 
+    /**
+     * Create a Geometry from triangle information in ByteBuffers.
+     * 
+     * @param chunkName Name given to Geometry object.
+     * @param intIndicesBuffer Indices for the Geometry.
+     * @param verticesBuffer Vertices for the Geometry.
+     * @param normalsBuffer Normals for the Geometry
+     * @return The created Geometry.
+     */
     public static Geometry createGeometry(String chunkName, ByteBuffer intIndicesBuffer,
             ByteBuffer verticesBuffer, ByteBuffer normalsBuffer) {
         Mesh m = new Mesh();
