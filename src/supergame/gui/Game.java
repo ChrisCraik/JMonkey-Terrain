@@ -48,9 +48,9 @@ public class Game extends AbstractAppState implements ScreenController {
         if (sCreatureMaterial == null) {
             sCreatureMaterial = new Material(sInstance.mApp.getAssetManager(),
                     "Common/MatDefs/Light/Lighting.j3md");
-            sCreatureMaterial.setBoolean("m_UseMaterialColors", true);
-            sCreatureMaterial.setColor("m_Ambient", ColorRGBA.Green);
-            sCreatureMaterial.setColor("m_Diffuse", ColorRGBA.Green);
+            sCreatureMaterial.setBoolean("UseMaterialColors", true);
+            sCreatureMaterial.setColor("Ambient", ColorRGBA.Green);
+            sCreatureMaterial.setColor("Diffuse", ColorRGBA.Green);
         }
         return sCreatureMaterial;
     }
@@ -83,9 +83,9 @@ public class Game extends AbstractAppState implements ScreenController {
 
         Material mat = new Material(mApp.getAssetManager(),
                 "Common/MatDefs/Light/Lighting.j3md");
-        mat.setBoolean("m_UseMaterialColors", true);
-        mat.setColor("m_Ambient", ColorRGBA.Brown);
-        mat.setColor("m_Diffuse", ColorRGBA.Brown);
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Ambient", ColorRGBA.Brown);
+        mat.setColor("Diffuse", ColorRGBA.Brown);
         mChunkManager = new ChunkManager(0, 0, 0, Config.CHUNK_LOAD_DISTANCE,
                 mat, mApp.getRootNode(), mPhysicsContent.getRegistrar());
         ChunkCastle.create();

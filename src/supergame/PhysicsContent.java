@@ -26,9 +26,9 @@ public class PhysicsContent {
     public PhysicsContent(Node rootNode, AssetManager assetManager, AppStateManager stateManager) {
         mRootNode = rootNode;
         Material mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-        mat.setBoolean("m_UseMaterialColors", true);
-        mat.setColor("m_Ambient",  ColorRGBA.DarkGray);
-        mat.setColor("m_Diffuse",  ColorRGBA.DarkGray);
+        mat.setBoolean("UseMaterialColors", true);
+        mat.setColor("Ambient",  ColorRGBA.DarkGray);
+        mat.setColor("Diffuse",  ColorRGBA.DarkGray);
 
         mBulletAppState = new BulletAppState();
         stateManager.attach(mBulletAppState);

@@ -89,7 +89,9 @@ public abstract class EntityManager {
 
                         // write contents of packet to buffer
                         mBuffer.position(12);
-                        mKryo.writeObject(mBuffer, object);
+                        
+                        // TODO: serialize correctly
+                        //mKryo.writeObject(mBuffer, object);
 
                         // write position to head of buffer
                         int objectSize = mBuffer.position() - 12;

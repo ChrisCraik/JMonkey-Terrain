@@ -52,7 +52,7 @@ public class SuperSimpleApplication extends SimpleApplication {
     @Override
     public void simpleInitApp() {
         Logger.getLogger("").setLevel(Config.LOG_LEVEL);
-        assetManager.registerLocator( "./assets/", FileLocator.class.getName() );
+        assetManager.registerLocator("./assets/", FileLocator.class);
         initInputMappings();
         sCamera = new LocalPlayerCreatureIntelligence(cam, inputManager);
 

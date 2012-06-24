@@ -1,23 +1,16 @@
 
 package supergame.terrain;
 
-import com.jme3.bullet.collision.shapes.CollisionShape;
-import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
-import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.util.BufferUtils;
 
 import supergame.Config;
 import supergame.PhysicsContent.PhysicsRegistrar;
 import supergame.network.Structs.ChunkMessage;
 import supergame.terrain.modify.ChunkModifierInterface;
-import supergame.utils.MarchingCubes;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -147,6 +140,7 @@ public class Chunk {
             mChunkIntIndices = null;
             mChunkShortIndices = null;
             if (mGeometry != null) {
+                // TODO: unregester physics
                 mGeometry.removeFromParent();
             }
         }
@@ -156,8 +150,8 @@ public class Chunk {
 
     // Parallel Methods - called by worker threads
 
-//per worker temporary buffer data for chunk processing
-    private static class WorkerBuffers {
+    /** per worker/thread temporary buffer data for chunk processing */
+    /*package*/ static class WorkerBuffers {
         public float[][][] weights = new float[Config.CHUNK_DIVISION + 2][Config.CHUNK_DIVISION + 2][Config.CHUNK_DIVISION + 2];
         public float[] vertices = new float[9 * Config.CHUNK_DIVISION * Config.CHUNK_DIVISION * Config.CHUNK_DIVISION];
         public int verticesFloatCount;
@@ -170,180 +164,42 @@ public class Chunk {
         return new WorkerBuffers();
     }
 
-    private boolean parallel_processCalcWeights(WorkerBuffers buffers) {
+    private void parallel_processSetEmpty(WorkerBuffers buffers) {
         // initialize weights from modifiedParent, if parent was modified
-        boolean skipGeneration = false;
+        boolean skipWeightGeneration = false;
         if (mModifiedParent != null) {
             float oldWeights[][][] = mModifiedParent.getModifiedWeights();
             if (oldWeights != null) {
                 buffers.weights = oldWeights;
-                skipGeneration = true;
+                skipWeightGeneration = true;
             }
         }
-
-        int posCount = 0, negCount = 0;
-        for (int x = 0; x < Config.CHUNK_DIVISION + 1; x++)
-            for (int y = 0; y < Config.CHUNK_DIVISION + 1; y++)
-                for (int z = 0; z < Config.CHUNK_DIVISION + 1; z++) {
-                    Vector3f localPos = new Vector3f(mPosition.getX() + x, mPosition.getY() + y, mPosition.getZ() + z);
-
-                    if (!skipGeneration) {
-                        // haven't already initialized the weights from parent,
-                        // so need to call TerrainGenerator
-                        buffers.weights[x][y][z] = TerrainGenerator.getDensity(localPos);
-                    }
-
-                    if (mModifyComplete != null)
-                        buffers.weights[x][y][z] = mModifyComplete.getModification(
-                                localPos,
-                                buffers.weights[x][y][z]);
-
-                    if (buffers.weights[x][y][z] < 0)
-                        negCount++;
-                    else
-                        posCount++;
-                }
-        return (negCount != 0) && (posCount != 0); // return false if empty
-    }
-
-    private boolean parallel_processCalcGeometry(WorkerBuffers buffers) {
-        int x, y, z;
-        buffers.indicesIntCount = 0;
-        buffers.verticesFloatCount = 0;
-        if (true) {
-            Vector3f blockPos = new Vector3f(0, 0, 0);
-            for (x = 0; x < Config.CHUNK_DIVISION + 1; x++)
-                for (y = 0; y < Config.CHUNK_DIVISION + 1; y++)
-                    for (z = 0; z < Config.CHUNK_DIVISION + 1; z++)
-                        if (MarchingCubes.cubeOccupied(x, y, z, buffers.weights)) {
-                            //calculate vertices, populate vert buffer, vertIndexVolume buffer (NOTE some of these vertices wasted: reside in neighbor chunks)
-                            blockPos.set(mPosition.getX() + x, mPosition.getY() + y, mPosition.getZ() + z);
-                            buffers.verticesFloatCount = MarchingCubes.writeLocalVertices(blockPos, x, y, z,
-                                    buffers.weights, buffers.vertices, buffers.verticesFloatCount,
-                                    buffers.vertIndexVolume);
-                        }
-            for (x = 0; x < Config.CHUNK_DIVISION; x++)
-                for (y = 0; y < Config.CHUNK_DIVISION; y++)
-                    for (z = 0; z < Config.CHUNK_DIVISION; z++)
-                        if (MarchingCubes.cubeOccupied(x, y, z, buffers.weights)) {
-                            //calculate indices
-                            buffers.indicesIntCount = MarchingCubes.writeLocalIndices(x, y, z, buffers.weights,
-                                    buffers.indices, buffers.indicesIntCount, buffers.vertIndexVolume);
-                        }
+        
+        // calculate weights from previous chunk, position, and modification
+        if (!ChunkUtils.calculateWeights(buffers.weights, skipWeightGeneration, mPosition,
+                mModifyComplete)) {
+            return;
         }
-
-        if (buffers.verticesFloatCount == 0 || buffers.indicesIntCount == 0)
-            return false;
-
+        
+        // calculate polys and normals
         if (mModifyComplete != null) {
             mModifyNormals = new HashMap<Integer, Vector3f>();
-            // manually calculate normals, because we have been modified since
-            // generation
-            for (int i = 0; i < buffers.indicesIntCount; i += 3) {
-                Vector3f vectors[] = new Vector3f[3];
-                for (int j = 0; j < 3; j++) {
-                    vectors[j] = new Vector3f(
-                            buffers.vertices[buffers.indices[i + j] + 0],
-                            buffers.vertices[buffers.indices[i + j] + 1],
-                            buffers.vertices[buffers.indices[i + j] + 2]);
-                }
-
-                Vector3f a = vectors[0].subtract(vectors[1]);
-                Vector3f b = vectors[0].subtract(vectors[2]);
-
-                // Note: don't normalize so that bigger polys have more weight
-                Vector3f normal = a.cross(b); // .normalize();
-
-                for (int j = 0; j < 3; j++) {
-                    int index = buffers.indices[i + j];
-                    Vector3f normalSumForIndex = mModifyNormals.get(index);
-                    if (normalSumForIndex == null) {
-                        // COPY first normal into hash (since the value in hash will
-                        // be modified)
-                        mModifyNormals.put(index, new Vector3f(normal));
-                    } else {
-                        // add into normal (since they're all normalized, we
-                        // can normalize the sum later to get the average)
-                        normalSumForIndex.addLocal(normal);
-                    }
-                }
-            }
         }
-
-        return true;
-    }
-
-    private boolean parallel_processSaveGeometry(WorkerBuffers buffers) {
+        if (!ChunkUtils.calculateGeometry(buffers, mPosition, mModifyNormals))
+            return;
+        
+        // save polys in bytebuffers for rendering/physics
         mChunkVertices = BufferUtils.createByteBuffer(buffers.verticesFloatCount * 4);
         mChunkNormals = BufferUtils.createByteBuffer(buffers.verticesFloatCount * 4);
         mChunkShortIndices = BufferUtils.createByteBuffer(buffers.indicesIntCount * 2);
         mChunkIntIndices = BufferUtils.createByteBuffer(buffers.indicesIntCount * 4);
-
-        if (true) {
-            Vector3f normal = new Vector3f(0, 0, 0);
-            for (int i = 0; i < buffers.verticesFloatCount; i += 3) {
-                float vx = buffers.vertices[i + 0];
-                float vy = buffers.vertices[i + 1];
-                float vz = buffers.vertices[i + 2];
-
-                mChunkVertices.putFloat(vx);
-                mChunkVertices.putFloat(vy);
-                mChunkVertices.putFloat(vz);
-
-                if (mModifyComplete != null && mModifyNormals.containsKey(i)) {
-                    normal = mModifyNormals.get(i).normalize();
-                } else {
-                    TerrainGenerator.getNormal(vx, vy, vz, normal);
-                }
-
-                mChunkNormals.putFloat(normal.getX());
-                mChunkNormals.putFloat(normal.getY());
-                mChunkNormals.putFloat(normal.getZ());
-            }
-            for (int i = 0; i < buffers.indicesIntCount; i++) {
-                mChunkShortIndices.putShort((short) (buffers.indices[i] / 3));
-                mChunkIntIndices.putInt(buffers.indices[i] / 3);
-            }
-        }
-
-        mChunkVertices.flip();
-        mChunkNormals.flip();
-        mChunkShortIndices.flip();
-        mChunkIntIndices.flip();
-        return false;
-    }
-
-    private void parallel_createGeometryAndPhysics() {
-        String chunkName = "Chunk" + mIndex.toString();
-        Mesh m = new Mesh();
-        m.setBuffer(Type.Index, 1, mChunkIntIndices.asIntBuffer());
-        m.setBuffer(Type.Position, 3, mChunkVertices.asFloatBuffer());
-        m.setBuffer(Type.Normal, 3, mChunkNormals.asFloatBuffer());
-        m.updateBound();
-
-        mGeometry = new Geometry(chunkName, m);
-
-        CollisionShape shape = CollisionShapeFactory.createMeshShape(mGeometry);
-        RigidBodyControl control = new RigidBodyControl(shape, 0);
-        mGeometry.addControl(control);
-    }
-
-    private void parallel_processSetEmpty(WorkerBuffers buffers) {
-        if (!parallel_processCalcWeights(buffers)) {
-            // if weights all negative or positive, no geometry
-            return;
-        }
-
-        if (!parallel_processCalcGeometry(buffers)) {
-            // no geometry generated (probably due to rounding issues)
-            return;
-        }
-
-        // save polys in bytebuffers for rendering/physics
-        parallel_processSaveGeometry(buffers);
+        ChunkUtils.storeGeometry(buffers, mModifyNormals, mChunkVertices, mChunkNormals,
+                mChunkShortIndices, mChunkIntIndices);
 
         // create Geometry and physics objects
-        parallel_createGeometryAndPhysics();
+        String chunkName = "Chunk" + mIndex.toString();
+        mGeometry = ChunkUtils.createGeometry(chunkName, mChunkIntIndices, mChunkVertices, mChunkNormals);
+        
         mIsEmpty = false; // flag tells main loop that chunk can be used
     }
 
@@ -379,19 +235,6 @@ public class Chunk {
             mModifyComplete.chunkCompletion(this);
         }
     }
-
-    /*
-    if (triangles.size() > 0) {
-        System.out.println("-- START Small Chunk Splat---");
-        for (int i = 0; i < triangles.size(); i++) {
-            System.out.printf("ORIG %f,%f,%f    NEW %f,%f,%f\n", triangles.get(i).getX(), triangles.get(i).getY(),
-                    triangles.get(i).getZ(), buffers.vertices[buffers.indices[i] + 0],
-                    buffers.vertices[buffers.indices[i] + 1], buffers.vertices[buffers.indices[i] + 2]);
-        }
-        System.out.println("-- END   Small Chunk Splat---");
-    }
-    */
-    ////
 
     /*
     normals = new ArrayList<Vec3>(triangles.size());
@@ -439,8 +282,8 @@ public class Chunk {
     }
 
     public float[][][] getModifiedWeights() {
-        float ret[][][] = this.mModifiedWeights;
-        this.mModifiedWeights = null;
+        float ret[][][] = mModifiedWeights;
+        mModifiedWeights = null;
         return ret;
     }
 
