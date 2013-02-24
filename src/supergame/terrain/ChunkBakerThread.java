@@ -7,11 +7,11 @@ package supergame.terrain;
 import supergame.SuperSimpleApplication;
 
 public class ChunkBakerThread extends Thread {
-    @SuppressWarnings("unused")
     private final int mId;
     private final ChunkProvider mChunkProvider;
 
     ChunkBakerThread(int id, ChunkProvider chunkProvider) {
+        super("ChunkBakerThread " + id);
         mId = id;
         mChunkProvider = chunkProvider;
     }
@@ -28,7 +28,7 @@ public class ChunkBakerThread extends Thread {
         while (SuperSimpleApplication.isRunning()) {
             try {
                 current = mChunkProvider.getChunkToProcess();
-                // System.out.println(id + " took chunk " + current);
+                //System.out.println("thread " + mId + " querying provider, got chunk " + current);
                 if (current != null) {
                     current.parallel_process(buffers);
                 }
@@ -40,5 +40,6 @@ public class ChunkBakerThread extends Thread {
                 System.exit(1);
             }
         }
+        //System.out.println("thread " + mId + " EXITING...");
     }
 }

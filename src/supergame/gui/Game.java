@@ -20,15 +20,21 @@ import de.lessvoid.nifty.screen.ScreenController;
 import supergame.Config;
 import supergame.PhysicsContent;
 import supergame.SuperSimpleApplication;
+import supergame.network.ClientEntityManager;
 import supergame.network.EntityManager;
 import supergame.network.ServerEntityManager;
 import supergame.terrain.ChunkManager;
 import supergame.terrain.modify.ChunkCastle;
 import supergame.terrain.modify.ChunkModifier;
+import supergame.utils.Log;
 
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Game extends AbstractAppState implements ScreenController {
+    private static Logger sLog = Log.getLogger(Game.class.getName(), Level.ALL);
+
     private Nifty mNifty;
     private SuperSimpleApplication mApp;
 
@@ -36,8 +42,17 @@ public class Game extends AbstractAppState implements ScreenController {
     private ChunkManager mChunkManager;
     private EntityManager mEntityManager;
     private double mLocalTime = 0;
+    private boolean mIsHosting = true; // default must match startup.xml definition
 
     private static Game sInstance;
+
+    // TODO: clean this up, redesign class hierarchy so event signals trickle
+    // down as needed, or use event callbacks in the Game instance
+    public static void closeConnections() {
+        if (sInstance != null && sInstance.mEntityManager != null) {
+            sInstance.mEntityManager.close();
+        }
+    }
 
     public static void registerPhysics(Object obj) {
         sInstance.mPhysicsContent.getRegistrar().registerPhysics(obj);
@@ -74,7 +89,7 @@ public class Game extends AbstractAppState implements ScreenController {
 
         mApp = (SuperSimpleApplication)app;
 
-        Logger.getLogger("").severe("INITIALIZING APP STATE");
+        sLog.severe("INITIALIZING APP STATE");
 
         mPhysicsContent = new PhysicsContent(
                 mApp.getRootNode(),
@@ -101,6 +116,7 @@ public class Game extends AbstractAppState implements ScreenController {
 
         mChunkManager.updateWithPosition(0, 0, 0);
 
+        // TODO: use nifty's "${CALL.method()} to query directly"
         Element element = mNifty.getCurrentScreen().findElementByName("LoadingPercentage");
         if (element != null) {
             float completionPercentage = ChunkModifier.getCompletion() * 100;
@@ -109,8 +125,26 @@ public class Game extends AbstractAppState implements ScreenController {
         }
 
         if (ChunkModifier.isEmpty() && mEntityManager == null) {
-            // TODO: choose server vs client
-            mEntityManager = new ServerEntityManager();
+            sLog.severe("starting up, hosting = " + mIsHosting);
+
+            if (mIsHosting) {
+                ServerEntityManager manager = new ServerEntityManager();
+                try {
+                    manager.bind(1432, 1432);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                mEntityManager = manager;
+            } else {
+                ClientEntityManager manager = new ClientEntityManager();
+                try {
+                    // TODO: query port and host addr correctly
+                    manager.connect(Config.CONNECT_TIMEOUT_MS, "localhost", 1432, 1432);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                mEntityManager = manager;
+            }
 
             mNifty.gotoScreen("end");
             mApp.setMouseMenuMode(false);
@@ -148,7 +182,8 @@ public class Game extends AbstractAppState implements ScreenController {
     @NiftyEventSubscriber(id = "HostingCheckBox")
     public void onAllCheckBoxChanged(final String id, final CheckBoxStateChangedEvent event) {
         Element element = mNifty.getCurrentScreen().findElementByName("ServerPickerPanel");
-        if (event.isChecked()) {
+        mIsHosting = event.isChecked();
+        if (mIsHosting) {
             element.hide();
         } else {
             element.show();

@@ -89,7 +89,7 @@ public abstract class EntityManager {
 
                         // write contents of packet to buffer
                         mBuffer.position(12);
-                        
+
                         // TODO: serialize correctly
                         //mKryo.writeObject(mBuffer, object);
 

@@ -9,21 +9,24 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Mesh;
 import com.jme3.scene.VertexBuffer.Type;
 
-import java.nio.ByteBuffer;
-
 import supergame.Config;
 import supergame.terrain.Chunk.WorkerBuffers;
 import supergame.terrain.modify.ChunkModifierInterface;
 import supergame.utils.MarchingCubes;
 
+import java.nio.ByteBuffer;
+
+/**
+ * Collection of static utility functions used in creating chunk geometry.
+ */
 public class ChunkUtils {
     /** Purely static class */
     private ChunkUtils() {};
-    
+
     /**
      * Updates weights used in calculating chunk geometry. Positive values
      * indicate presence of terrain, negative values indicate its absence.
-     * 
+     *
      * @param weights The input/output weight data
      * @param skipGeneration If true, the weights have already been calculated
      *            by a previous generation, (but haven't been modified).
@@ -102,12 +105,12 @@ public class ChunkUtils {
 
         return (buffers.verticesFloatCount != 0) && (buffers.indicesIntCount != 0);
     }
-    
+
     /**
      * Perform brute-force normal calculation, without the simpler and more
      * efficient terrain algorithm weight sampling. This approach is required if
      * the terrain is modified beyond its original form.
-     * 
+     *
      * @param buffers Struct containing input vertex and index lists, as well as
      *            output normals hashmap.
      */
@@ -148,7 +151,7 @@ public class ChunkUtils {
      * Copy index, vertex, and normal lists from WorkerBuffers struct to
      * ByteBuffers. Currently generates redundant index lists - both shorts and
      * ints.
-     * 
+     *
      * @param buffers Struct containing input vertex, index, and normal buffers.
      * @param verticesBuffer Output list of vertices, three floats each.
      * @param normalsBuffer Output list of normals each associated with a
@@ -192,7 +195,7 @@ public class ChunkUtils {
 
     /**
      * Create a Geometry from triangle information in ByteBuffers.
-     * 
+     *
      * @param chunkName Name given to Geometry object.
      * @param intIndicesBuffer Indices for the Geometry.
      * @param verticesBuffer Vertices for the Geometry.

@@ -31,7 +31,7 @@
             <panel style="nifty-panel-simple" width="50%" childLayout="vertical" >
                 <effect>
                     <onStartScreen name="move" mode="in" direction="top" length="200" startDelay="0" inherit="true"/>
-                    <onEndScreen name="move" mode="out" direction="bottom" length="200" startDelay="100" inherit="true"/>
+                    <onEndScreen name="move" mode="out" direction="bottom" length="200" startDelay="0" inherit="true"/>
                 </effect>
                     <control name="label" color="#000f" text="Loading..." />
                     <control id="LoadingPercentage" width="100%" name="label" color="#000f" text="0%" />

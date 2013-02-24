@@ -15,14 +15,19 @@ import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
 import supergame.network.Structs.StateMessage;
 import supergame.terrain.modify.ChunkModifier;
+import supergame.utils.Log;
 
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ServerEntityManager extends EntityManager {
+    private static Logger sLog = Log.getLogger(ServerEntityManager.class.getName(), Level.ALL);
+
     private int mNextEntityId = 1;
 
     // FIXME: this assumes 0 isn't a valid connection. is that guaranteed?
@@ -86,6 +91,7 @@ public class ServerEntityManager extends EntityManager {
     }
 
     public void bind(int tcp, int udp) throws IOException {
+        sLog.info("binding to tcp, udp...");
         ((Server) mEndPoint).start(); // there's probably a reason not to do this here...
         ((Server) mEndPoint).bind(tcp, udp);
     }
@@ -138,7 +144,7 @@ public class ServerEntityManager extends EntityManager {
 
         // create a local ClientState/Creature, if it hasn't been done yet
         if (!mClientStateMap.containsKey(LOCAL_CONN)) {
-            System.err.println("creating char for local connection " + 0);
+            sLog.info("creating char for local connection " + 0);
             ClientState localState = new ClientState(this, LOCAL_CONN, SuperSimpleApplication.sCamera);
             mClientStateMap.put(LOCAL_CONN, localState);
 
@@ -150,7 +156,7 @@ public class ServerEntityManager extends EntityManager {
         // new connection: create ClientState/Creature
         for (Connection c : ((Server) mEndPoint).getConnections()) {
             if (!mClientStateMap.containsKey(c.getID())) {
-                System.err.println("creating char for connection " + c.getID());
+                sLog.info("New connection " + c.getID() + ", creating char for connection " + c.getID());
                 ClientState newClient = new ClientState(this, c.getID(), null);
                 mClientStateMap.put(c.getID(), newClient);
 
@@ -172,6 +178,8 @@ public class ServerEntityManager extends EntityManager {
                 break;
             }
 
+            sLog.info("received packet from connection " + pair.connection.getID() + ", of type "
+                    + pair.object.getClass().getName());
             ClientState remoteClient = mClientStateMap.get(pair.connection.getID());
             if (remoteClient == null) {
                 continue;

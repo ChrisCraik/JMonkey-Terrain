@@ -82,12 +82,14 @@ public class SuperSimpleApplication extends SimpleApplication {
         sTpf = tpf;
     }
 
-    private static boolean mRunning = true;
-    public static boolean isRunning() { return mRunning; }
+    private static boolean sRunning = true;
+    public static boolean isRunning() { return sRunning; }
 
     @Override
     public void stop() {
-        mRunning = false;
+        System.out.println("STOPPED RUNNING");
+        sRunning = false;
+        Game.closeConnections();
         super.stop();
     }
 
@@ -95,7 +97,10 @@ public class SuperSimpleApplication extends SimpleApplication {
         SuperSimpleApplication app = new SuperSimpleApplication();
         AppSettings settings = new AppSettings(true);
         settings.setFrameRate(Config.FRAME_RATE_CAP);
+        settings.setResolution(1280, 720);
+        settings.setSamples(4);
         app.setSettings(settings);
+        app.setPauseOnLostFocus(false);
         app.start();
     }
 }

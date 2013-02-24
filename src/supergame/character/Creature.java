@@ -68,6 +68,10 @@ public class Creature extends Entity {
         // TODO: make node, add mCharacterControl as its control
     }
 
+    public Creature() {
+        this(0, 0, 0, null);
+    }
+
     public void setControlMessage(DesiredActionMessage message) {
         // FIXME: handle out of order messages
 

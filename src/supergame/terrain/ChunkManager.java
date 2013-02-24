@@ -62,8 +62,9 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
 
         System.out.printf("Chunkmanager starting at position %d %d %d\n", x, y, z);
 
-        for (int i = 0; i < Config.WORKER_THREADS; i++)
+        for (int i = 0; i < Config.WORKER_THREADS; i++) {
             new ChunkBakerThread(i, this).start();
+        }
 
         sweepNearby(x, y, z, 2, false);
         sweepNearby(x, y, z, mLoadDistance, false);

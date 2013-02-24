@@ -12,6 +12,7 @@ import supergame.network.Structs.EntityData;
 import supergame.network.Structs.StartMessage;
 import supergame.network.Structs.StateMessage;
 import supergame.terrain.modify.ChunkModifier;
+import supergame.utils.Log;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -19,8 +20,12 @@ import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ClientEntityManager extends EntityManager {
+    private static Logger sLog = Log.getLogger(ClientEntityManager.class.getName(), Level.ALL);
+
     /**
      * Normal ClientEntityManager constructor.
      */
@@ -75,10 +80,10 @@ public class ClientEntityManager extends EntityManager {
                     registerEntity(newEntity, id);
                     newEntity.apply(timestamp, data);
                 } catch (InstantiationException e) {
-                    System.err.println("ERROR: class lacks no-arg constructor");
+                    sLog.severe("ERROR: class lacks no-arg constructor");
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
-                    System.err.println("ERROR: class lacks public constructor");
+                    sLog.severe("ERROR: class lacks public constructor");
                     e.printStackTrace();
                 }
             }
@@ -86,9 +91,9 @@ public class ClientEntityManager extends EntityManager {
     }
 
     public void connect(int timeout, String address, int tcp, int udp) throws IOException {
+        sLog.info("connecting to server...");
         if (mEndPoint != null) {
-            mEndPoint.start(); // there's probably a reason not to do this
-                               // here...
+            mEndPoint.start(); // there's probably a reason not to do this here...
             ((Client) mEndPoint).connect(timeout, address, tcp, udp);
         }
     }

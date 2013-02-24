@@ -5,7 +5,7 @@ import java.util.logging.Level;
 public class Config {
     public static final int CHUNK_DIVISION = 16;
     public static final int CHUNK_LOAD_DISTANCE = 6;
-    public static final int WORKER_THREADS = 2;
+    public static final int WORKER_THREADS = 1;
     public static final int FRAME_RATE_CAP = 60;
 
     // CHATTING
@@ -19,6 +19,7 @@ public class Config {
     public static double SAMPLE_DELAY = 100;
     public static int OBJECT_BUFFER_SIZE = 128*1024;
     public static int WRITE_BUFFER_SIZE = OBJECT_BUFFER_SIZE * 4;
+    public static int CONNECT_TIMEOUT_MS = 2000;
 
     // LOGGING
     public static Level LOG_LEVEL = Level.SEVERE;
