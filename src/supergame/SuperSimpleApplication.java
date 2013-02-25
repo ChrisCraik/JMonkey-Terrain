@@ -87,7 +87,6 @@ public class SuperSimpleApplication extends SimpleApplication {
 
     @Override
     public void stop() {
-        System.out.println("STOPPED RUNNING");
         sRunning = false;
         Game.closeConnections();
         super.stop();

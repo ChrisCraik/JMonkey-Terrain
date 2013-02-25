@@ -33,6 +33,10 @@ public class Creature extends Entity {
     private float mHeading = 0;
     private float mPitch = 0;
 
+    // time from liftoff to peak of a jump, used to workaround onGround bug
+    private final double JUMP_TIME_TO_PEAK = 0.667;
+    private double mLastJump = 0;
+
     private final Equipment mEquipment = new Equipment();
 
     private final CreatureIntelligence mIntelligence;
@@ -92,11 +96,21 @@ public class Creature extends Entity {
         mPitch = mDesiredActionMessage.pitch;
 
         Vector3f walkDirection = new Vector3f(mDesiredActionMessage.x, 0, mDesiredActionMessage.z);
-        if (walkDirection.length() > 1f)
+        if (walkDirection.length() > 1f) {
             walkDirection.normalize();
+        }
 
-        if (mDesiredActionMessage.jump) {
-            mCharacterControl.jump();
+        if (mDesiredActionMessage.jump && mCharacterControl.onGround()) {
+            //System.out.println("character " + this + "jumping from on ground, delta = "
+            //        + Math.abs((localTime - mLastJump) - JUMP_TIME_TO_PEAK));
+
+            if (Math.abs((localTime - mLastJump) - JUMP_TIME_TO_PEAK) > 0.05) {
+                // Hack to work around onGround returning true at the peak of a
+                // jump. Constant should be adjusted whenever character physics
+                // constants are changed
+                mCharacterControl.jump();
+            }
+            mLastJump = localTime;
         }
 
         walkDirection.multLocal(0.25f);
