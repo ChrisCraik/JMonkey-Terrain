@@ -8,7 +8,10 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.shadow.PssmShadowFilter;
 import com.jme3.system.AppSettings;
 
 import de.lessvoid.nifty.Nifty;
@@ -49,6 +52,7 @@ public class SuperSimpleApplication extends SimpleApplication {
         inputManager.addMapping("select-tool-3", new KeyTrigger(KeyInput.KEY_3));
     }
 
+    //PssmShadowFilter mPssmRenderer;
     @Override
     public void simpleInitApp() {
         Logger.getLogger("").setLevel(Config.LOG_LEVEL);
@@ -57,6 +61,13 @@ public class SuperSimpleApplication extends SimpleApplication {
         sCamera = new LocalPlayerCreatureIntelligence(cam, inputManager);
 
         viewPort.setBackgroundColor(new ColorRGBA(0.5f, 0.5f, 1, 1));
+
+        // simple shadows
+        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+        PssmShadowFilter pssmShadowFilter = new PssmShadowFilter(assetManager, 1024*2, 3);
+        pssmShadowFilter.setDirection(new Vector3f(-.5f,-.6f,-.7f).normalizeLocal());
+        fpp.addFilter(pssmShadowFilter);
+        viewPort.addProcessor(fpp);
 
         NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
                 inputManager,
@@ -97,7 +108,7 @@ public class SuperSimpleApplication extends SimpleApplication {
         AppSettings settings = new AppSettings(true);
         settings.setFrameRate(Config.FRAME_RATE_CAP);
         settings.setResolution(1280, 720);
-        settings.setSamples(4);
+        settings.setSamples(0);
         app.setSettings(settings);
         app.setPauseOnLostFocus(false);
         app.start();

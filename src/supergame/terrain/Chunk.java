@@ -3,6 +3,7 @@ package supergame.terrain;
 
 import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.util.BufferUtils;
@@ -11,6 +12,7 @@ import supergame.Config;
 import supergame.PhysicsContent.PhysicsRegistrar;
 import supergame.network.Structs.ChunkMessage;
 import supergame.terrain.modify.ChunkModifierInterface;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -127,6 +129,7 @@ public class Chunk {
             return;
 
         mGeometry.setMaterial(mat);
+        mGeometry.setShadowMode(ShadowMode.CastAndReceive);
         parent.attachChild(mGeometry);
 
         registrar.registerPhysics(mGeometry);
@@ -175,7 +178,7 @@ public class Chunk {
                 skipWeightGeneration = true;
             }
         }
-        
+
         // calculate weights from previous chunk, position, and modification
         if (!ChunkUtils.calculateWeights(buffers.weights, skipWeightGeneration, mPosition,
                 mModifyComplete)) {
@@ -185,12 +188,12 @@ public class Chunk {
         // calculate triangles
         if (!ChunkUtils.calculateTriangles(buffers, mPosition))
             return;
-        
+
         // if chunk is modified, have to brute force calculate normals
         if (mModifyComplete != null) {
             ChunkUtils.calculateNormals(buffers);
         }
-        
+
         // save polys in bytebuffers for rendering/physics
         mChunkVertices = BufferUtils.createByteBuffer(buffers.verticesFloatCount * 4);
         mChunkNormals = BufferUtils.createByteBuffer(buffers.verticesFloatCount * 4);
@@ -202,7 +205,7 @@ public class Chunk {
         // create Geometry and physics objects
         String chunkName = "Chunk" + mIndex.toString();
         mGeometry = ChunkUtils.createGeometry(chunkName, mChunkIntIndices, mChunkVertices, mChunkNormals);
-        
+
         mIsEmpty = false; // flag tells main loop that chunk can be used
     }
 

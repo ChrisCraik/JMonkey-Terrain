@@ -3,6 +3,7 @@ package supergame.character;
 
 import com.jme3.math.Vector3f;
 
+import supergame.Config;
 import supergame.SuperSimpleApplication;
 import supergame.network.Structs.DesiredActionMessage;
 import supergame.terrain.modify.BlockChunkModifier;
@@ -73,7 +74,7 @@ public class Equipment {
 
     private void useTool(DesiredActionMessage message) {
         mSecondsSinceShoot += SuperSimpleApplication.tpf();
-        if (mSecondsSinceShoot > 0.3f && (message.use0 || message.use1)) {
+        if (mSecondsSinceShoot > (Config.SHOOT_PERIOD_MS / 1000.0) && (message.use0 || message.use1)) {
             mSecondsSinceShoot = 0;
 
             float increment = 0.5f;

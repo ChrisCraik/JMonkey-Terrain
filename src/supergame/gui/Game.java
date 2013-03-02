@@ -6,6 +6,7 @@ import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 
@@ -78,6 +79,7 @@ public class Game extends AbstractAppState implements ScreenController {
         }
 
         sCreatureRoot.attachChild(creatureGeomNode);
+        creatureGeomNode.setShadowMode(ShadowMode.CastAndReceive);
     }
 
     // AppState methods

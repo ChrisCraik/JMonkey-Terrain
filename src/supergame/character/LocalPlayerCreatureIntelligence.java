@@ -100,6 +100,8 @@ public class LocalPlayerCreatureIntelligence extends CreatureIntelligence implem
 
         // calculate absolute forward/strafe
         mCamera.getDirection(mForwardDir);
+        mForwardDir.y = 0;
+        mForwardDir.normalizeLocal();
         mCamera.getLeft(mStrafeDir);
 
         // set walkDirection for character

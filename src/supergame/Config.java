@@ -8,6 +8,8 @@ public class Config {
     public static final int WORKER_THREADS = 4;
     public static final int FRAME_RATE_CAP = 60;
 
+    public static final int SHOOT_PERIOD_MS = 100;
+
     // CHATTING
     public static int CHAT_HISTORY = 10;
     public static float CHAT_FADE = 10000;
@@ -19,7 +21,7 @@ public class Config {
     public static double SAMPLE_DELAY = 100;
     public static int OBJECT_BUFFER_SIZE = 128*1024;
     public static int WRITE_BUFFER_SIZE = OBJECT_BUFFER_SIZE * 4;
-    public static int CONNECT_TIMEOUT_MS = 2000;
+    public static int CONNECT_TIMEOUT_MS = 5000;
 
     // LOGGING
     public static Level LOG_LEVEL = Level.SEVERE;
