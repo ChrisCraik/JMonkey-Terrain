@@ -30,6 +30,36 @@ public class Structs {
         public String s = null;
     }
 
+    public static class Intent {
+        public double timestamp;
+        public float x;
+        public float z;
+        public float heading;
+        public float pitch;
+        public boolean jump;
+        public boolean sprint;
+        public boolean duck;
+        public boolean use0;
+        public boolean use1;
+        public int toolSelection;
+        public float targetDistance;
+
+        public void set(Intent other) {
+            timestamp = other.timestamp;
+            x = other.x;
+            z = other.z;
+            heading = other.heading;
+            pitch = other.pitch;
+            jump = other.jump;
+            sprint = other.sprint;
+            duck = other.duck;
+            use0 = other.use0;
+            use1 = other.use1;
+            toolSelection = other.toolSelection;
+            targetDistance = other.targetDistance;
+        }
+    }
+
     public static class DesiredActionMessage {
         public double timestamp;
         public float x;

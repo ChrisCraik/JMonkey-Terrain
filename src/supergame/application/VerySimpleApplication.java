@@ -1,0 +1,86 @@
+package supergame.application;
+
+import com.jme3.app.SimpleApplication;
+import com.jme3.asset.plugins.FileLocator;
+import com.jme3.bullet.BulletAppState;
+import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
+import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseAxisTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
+import com.jme3.niftygui.NiftyJmeDisplay;
+import com.jme3.post.FilterPostProcessor;
+import com.jme3.shadow.PssmShadowFilter;
+import com.jme3.system.AppSettings;
+
+import de.lessvoid.nifty.Nifty;
+import supergame.Config;
+import supergame.appstate.ChunkAppState;
+import supergame.appstate.StartupMenuAppState;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class VerySimpleApplication extends SimpleApplication {
+
+    private void initInputMappings() {
+        inputManager.addMapping("left", new KeyTrigger(KeyInput.KEY_D));
+        inputManager.addMapping("right", new KeyTrigger(KeyInput.KEY_A));
+        inputManager.addMapping("forward", new KeyTrigger(KeyInput.KEY_W));
+        inputManager.addMapping("back", new KeyTrigger(KeyInput.KEY_S));
+        inputManager.addMapping("jump", new KeyTrigger(KeyInput.KEY_SPACE));
+
+        inputManager.addMapping("target-forward", new KeyTrigger(KeyInput.KEY_UP));
+        inputManager.addMapping("target-back", new KeyTrigger(KeyInput.KEY_DOWN));
+        inputManager.addMapping("target-forward", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, false));
+        inputManager.addMapping("target-back", new MouseAxisTrigger(MouseInput.AXIS_WHEEL, true));
+
+        inputManager.addMapping("tool-main", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("tool-secondary", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+
+        inputManager.addMapping("select-tool-0", new KeyTrigger(KeyInput.KEY_0));
+        inputManager.addMapping("select-tool-1", new KeyTrigger(KeyInput.KEY_1));
+        inputManager.addMapping("select-tool-2", new KeyTrigger(KeyInput.KEY_2));
+        inputManager.addMapping("select-tool-3", new KeyTrigger(KeyInput.KEY_3));
+    }
+
+    @Override
+    public void simpleInitApp() {
+        Logger.getLogger("").setLevel(Level.WARNING);
+        assetManager.registerLocator("./assets/", FileLocator.class);
+        initInputMappings();
+
+        // initialize basic drawing (color, shadows)
+        viewPort.setBackgroundColor(new ColorRGBA(0.5f, 0.5f, 1, 1));
+        FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
+        PssmShadowFilter pssmShadowFilter = new PssmShadowFilter(assetManager, 1024*2, 3);
+        pssmShadowFilter.setDirection(new Vector3f(-.5f,-.6f,-.7f).normalizeLocal());
+        fpp.addFilter(pssmShadowFilter);
+        viewPort.addProcessor(fpp);
+
+
+        NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
+                inputManager, audioRenderer, guiViewPort);
+        Nifty nifty = niftyDisplay.getNifty();
+        StartupMenuAppState startup = new StartupMenuAppState();
+        nifty.fromXml("Interface/Nifty/startup.xml", "start", startup);
+        guiViewPort.addProcessor(niftyDisplay);
+
+        stateManager.attach(startup);
+        stateManager.attach(new BulletAppState());
+        stateManager.attach(new ChunkAppState());
+    }
+
+    public static void main(String[] args){
+        VerySimpleApplication app = new VerySimpleApplication();
+        AppSettings settings = new AppSettings(true);
+        settings.setFrameRate(Config.FRAME_RATE_CAP);
+        settings.setResolution(1280, 720);
+        settings.setSamples(0);
+        app.setSettings(settings);
+        app.setPauseOnLostFocus(false);
+        app.start();
+    }
+}

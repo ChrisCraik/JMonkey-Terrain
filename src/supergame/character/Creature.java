@@ -27,7 +27,7 @@ public class Creature extends Entity {
 
     public static class CreatureData extends EntityData {
         // state for any given character that the server sends to the client
-        float array[] = new float[LERP_FIELDS]; // x,y,z, heading, pitch
+        public float array[] = new float[LERP_FIELDS]; // x,y,z, heading, pitch
     }
 
     private float mHeading = 0;
@@ -97,7 +97,7 @@ public class Creature extends Entity {
 
         Vector3f walkDirection = new Vector3f(mDesiredActionMessage.x, 0, mDesiredActionMessage.z);
         if (walkDirection.length() > 1f) {
-            walkDirection.normalize();
+            walkDirection.normalizeLocal();
         }
 
         if (mDesiredActionMessage.jump && mCharacterControl.onGround()) {

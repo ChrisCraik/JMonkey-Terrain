@@ -11,7 +11,7 @@ public class ChunkBakerThread extends Thread {
     private final int mId;
     private final ChunkProvider mChunkProvider;
 
-    ChunkBakerThread(int id, ChunkProvider chunkProvider) {
+    public ChunkBakerThread(int id, ChunkProvider chunkProvider) {
         super("ChunkBakerThread " + id);
         mId = id;
         mChunkProvider = chunkProvider;

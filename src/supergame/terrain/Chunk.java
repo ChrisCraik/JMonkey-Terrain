@@ -1,15 +1,11 @@
 
 package supergame.terrain;
 
-import com.jme3.material.Material;
 import com.jme3.math.Vector3f;
-import com.jme3.renderer.queue.RenderQueue.ShadowMode;
 import com.jme3.scene.Geometry;
-import com.jme3.scene.Node;
 import com.jme3.util.BufferUtils;
 
 import supergame.Config;
-import supergame.PhysicsContent.PhysicsRegistrar;
 import supergame.network.Structs.ChunkMessage;
 import supergame.terrain.modify.ChunkModifierInterface;
 
@@ -122,33 +118,24 @@ public class Chunk {
 
     private Geometry mGeometry = null;
 
-    public void serial_attachGeometry(Material mat, Node parent, PhysicsRegistrar registrar) {
+    public Geometry serial_getNewGeometry() {
         // if the chunk doesn't have content, it's empty or not done
         // if geometry has a material, it's already been attached
-        if (mIsEmpty || mGeometry.getMaterial() != null)
-            return;
+        if (mIsEmpty || mGeometry.getMaterial() != null) return null;
 
-        mGeometry.setMaterial(mat);
-        mGeometry.setShadowMode(ShadowMode.CastAndReceive);
-        parent.attachChild(mGeometry);
-
-        registrar.registerPhysics(mGeometry);
+        return mGeometry;
     }
 
-    public void serial_clean(PhysicsRegistrar registrar) {
+    public Geometry serial_clean() {
         if (!mIsEmpty) {
             mChunkVertices = null;
             mChunkNormals = null;
             mChunkIntIndices = null;
             mChunkShortIndices = null;
-            if (mGeometry != null) {
-                registrar.unregisterPhysics(mGeometry);
-                // TODO: unregester physics
-                mGeometry.removeFromParent();
-            }
         }
 
         mPosition = null;
+        return mGeometry; // null if empty
     }
 
     // Parallel Methods - called by worker threads

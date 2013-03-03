@@ -2,6 +2,7 @@
 package supergame.terrain;
 
 import com.jme3.material.Material;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 
 import supergame.Config;
@@ -31,10 +32,6 @@ import java.util.concurrent.TimeUnit;
  * chunks they replace atomically, once the generation of modified chunks is
  * complete.
  */
-
-interface ChunkProvider {
-    public Chunk getChunkToProcess() throws InterruptedException;
-}
 
 public class ChunkManager implements ChunkProvider, ChunkProcessor {
     private long mLastX, mLastY, mLastZ;
@@ -78,7 +75,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
                         // Stall until chunk processed
                         Chunk localChunk = mChunks.get(new ChunkIndex(x + i, y + j, z + k));
                         while (!localChunk.processingIsComplete()) {}
-                        localChunk.serial_attachGeometry(mMaterial, mParent, mPhysicsRegistrar);
+                        attachChunkGeometry(localChunk.serial_getNewGeometry());
                     } else {
                         // prioritize the chunk
                         prioritizeChunk(x + i, y + j, z + k);
@@ -86,6 +83,19 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
                 }
             }
         }
+    }
+
+    private void attachChunkGeometry(Geometry g) {
+        if (g == null) return;
+
+        g.setMaterial(mMaterial);
+        mParent.attachChild(g);
+        mPhysicsRegistrar.registerPhysics(g);
+    }
+    private void detachChunkGeometry(Geometry g) {
+        if (g == null) return;
+        g.removeFromParent();
+        mPhysicsRegistrar.unregisterPhysics(g);
     }
 
     /**
@@ -118,7 +128,11 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         if (c != null) {
             if (!c.processingIsComplete())
                 c.cancelParallelProcessing();
-            c.serial_clean(mPhysicsRegistrar);
+            Geometry g = c.serial_clean();
+            if (g != null) {
+                g.removeFromParent();
+                mPhysicsRegistrar.unregisterPhysics(g);
+            }
             mChunks.remove(key);
         }
 
@@ -185,7 +199,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
 
     private void attachGeometry() {
         for (Chunk c : mChunks.values()) {
-            c.serial_attachGeometry(mMaterial, mParent, mPhysicsRegistrar);
+            attachChunkGeometry(c.serial_getNewGeometry());
         }
     }
 
@@ -218,7 +232,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
             if (!oldChunk.processingIsComplete()) {
                 oldChunk.cancelParallelProcessing();
             }
-            oldChunk.serial_clean(mPhysicsRegistrar);
+            detachChunkGeometry(oldChunk.serial_clean());
 
             mChunks.put(i, newChunk);
         }
