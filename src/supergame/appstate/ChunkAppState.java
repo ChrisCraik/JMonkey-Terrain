@@ -6,12 +6,11 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.bullet.BulletAppState;
-import com.jme3.material.Material;
-import com.jme3.math.ColorRGBA;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 
 import supergame.Config;
+import supergame.application.MaterialManager;
 import supergame.terrain.Chunk;
 import supergame.terrain.ChunkBakerThread;
 import supergame.terrain.ChunkIndex;
@@ -38,7 +37,6 @@ public class ChunkAppState extends AbstractAppState {
     private long mLastZ = 0;
 
     private final Node mChunkRoot = new Node("chunk_root");
-    private Material mChunkMaterial = null;
 
     private final ChunkProvider mChunkProvider = new ChunkProvider() {
         @Override
@@ -88,12 +86,6 @@ public class ChunkAppState extends AbstractAppState {
         mStateManager = stateManager;
         ((SimpleApplication)app).getRootNode().attachChild(mChunkRoot);
 
-        mChunkMaterial = new Material(app.getAssetManager(),
-                "Common/MatDefs/Light/Lighting.j3md");
-        mChunkMaterial.setBoolean("UseMaterialColors", true);
-        mChunkMaterial.setColor("Ambient", ColorRGBA.Brown);
-        mChunkMaterial.setColor("Diffuse", ColorRGBA.Brown);
-
         for (int i = 0; i < Config.WORKER_THREADS; i++) {
             new ChunkBakerThread(i, mChunkProvider).start();
         }
@@ -105,12 +97,11 @@ public class ChunkAppState extends AbstractAppState {
 
     @Override
     public void update(float tpf) {
-        System.out.println("chunks to make are " + mChunks.size() + ", " + mDirtyChunks.size());
         // TODO: use current character position
         processPosition(0, 0, 0);
 
         // process modified chunks, swap them into place as needed
-        ChunkModifier.step(mChunkProcessor);
+        ChunkModifier.update(mChunkProcessor);
 
         // create geometry as needed from chunks finished processing
         for (Chunk c : mChunks.values()) {
@@ -121,8 +112,7 @@ public class ChunkAppState extends AbstractAppState {
     private void attachChunkGeometry(Geometry g) {
         if (g == null) return;
 
-        System.out.println("attaching chunk geom");
-        g.setMaterial(mChunkMaterial);
+        g.setMaterial(MaterialManager.getTerrainMaterial());
         mChunkRoot.attachChild(g);
         mStateManager.getState(BulletAppState.class).getPhysicsSpace().add(g);
     }

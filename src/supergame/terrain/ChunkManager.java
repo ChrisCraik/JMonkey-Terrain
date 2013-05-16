@@ -145,7 +145,7 @@ public class ChunkManager implements ChunkProvider, ChunkProcessor {
         processPosition(x, y, z);
 
         // process modified chunks, swap them into place as needed
-        ChunkModifier.step(this);
+        ChunkModifier.update(this);
 
         // create geometry as needed from chunks finished processing
         attachGeometry();

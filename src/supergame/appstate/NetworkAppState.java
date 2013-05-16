@@ -30,7 +30,7 @@ public class NetworkAppState extends AbstractAppState {
 
     @Override
     public void cleanup() {
-        //TODO:`` closeConnections
+        //TODO: closeConnections
     }
 
     @Override

@@ -8,6 +8,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
@@ -19,6 +20,7 @@ import de.lessvoid.nifty.Nifty;
 import supergame.Config;
 import supergame.appstate.ChunkAppState;
 import supergame.appstate.StartupMenuAppState;
+import supergame.terrain.modify.ChunkCastle;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,9 +50,21 @@ public class VerySimpleApplication extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
+        flyCam.setEnabled(false);
         Logger.getLogger("").setLevel(Level.WARNING);
         assetManager.registerLocator("./assets/", FileLocator.class);
+        MaterialManager.init(assetManager);
         initInputMappings();
+
+        DirectionalLight sun = new DirectionalLight();
+        sun.setColor(ColorRGBA.White);
+        sun.setDirection(new Vector3f(-2, -1, -2).normalizeLocal());
+        rootNode.addLight(sun);
+
+        DirectionalLight sun2 = new DirectionalLight();
+        sun2.setColor(ColorRGBA.White);
+        sun2.setDirection(new Vector3f(2, -1, -2).normalizeLocal());
+        rootNode.addLight(sun2);
 
         // initialize basic drawing (color, shadows)
         viewPort.setBackgroundColor(new ColorRGBA(0.5f, 0.5f, 1, 1));
@@ -71,6 +85,8 @@ public class VerySimpleApplication extends SimpleApplication {
         stateManager.attach(startup);
         stateManager.attach(new BulletAppState());
         stateManager.attach(new ChunkAppState());
+
+        ChunkCastle.create();
     }
 
     public static void main(String[] args){

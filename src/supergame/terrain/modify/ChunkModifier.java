@@ -51,7 +51,7 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
     public static void setServerMode(boolean serverMode, ChunkProcessor cp) {
         while (!sChangeList.isEmpty()) {
             System.err.println("trying to step...");
-            step(cp);
+            update(cp);
         }
         sServerMode = serverMode;
     }
@@ -108,7 +108,7 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
      *
      * TODO: Multiple independent modifiers processing in parallel
      */
-    public static void step(ChunkProcessor cp) {
+    public static void update(ChunkProcessor cp) {
         ChunkModifier currentModifier = sChangeList.peekFirst();
 
         // no modifications, quick return

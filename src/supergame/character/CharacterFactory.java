@@ -7,10 +7,10 @@ import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.shape.Box;
 
+import supergame.application.MaterialManager;
 import supergame.control.ConsumeIntentControl;
 import supergame.control.LocalProduceIntentControl;
 import supergame.control.server.AiProduceIntentControl;
-import supergame.gui.Game;
 import supergame.network.Structs.Intent;
 
 public class CharacterFactory {
@@ -20,7 +20,7 @@ public class CharacterFactory {
     static public Geometry createPlayer(Application app) {
         CharacterControl characterControl = createCharacterControl();
         Geometry geometry = new Geometry("Player", sBox);
-        geometry.setMaterial(Game.getCharacterMaterial());
+        geometry.setMaterial(MaterialManager.getCharacterMaterial());
         Intent intent = new Intent();
 
         geometry.addControl(new LocalProduceIntentControl(app.getCamera(), intent, app.getInputManager()));
@@ -32,7 +32,7 @@ public class CharacterFactory {
         CharacterControl characterControl = createCharacterControl();
 
         Geometry geometry = new Geometry("AiCreature", sBox);
-        geometry.setMaterial(Game.getCharacterMaterial());
+        geometry.setMaterial(MaterialManager.getCharacterMaterial());
         Intent intent = new Intent();
 
         geometry.addControl(new AiProduceIntentControl(intent));

@@ -64,7 +64,7 @@ public class Equipment {
             Game.collision.drawCube(0.02f, 1, 0.02f);
             Game.collision.drawCube(0.02f, 0.02f, 1);
             GL11.glPopMatrix();
-            */
+*/
         }
 
         if (localToolsAllowed) {
