@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Deprecated
 public class Game extends AbstractAppState implements ScreenController {
     private static Logger sLog = Log.getLogger(Game.class.getName(), Level.ALL);
 

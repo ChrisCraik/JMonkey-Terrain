@@ -18,9 +18,11 @@ import de.lessvoid.nifty.Nifty;
 import supergame.character.CreatureIntelligence;
 import supergame.character.LocalPlayerCreatureIntelligence;
 import supergame.gui.Game;
+import supergame.terrain.ChunkBakerThread;
 
 import java.util.logging.Logger;
 
+@Deprecated
 public class SuperSimpleApplication extends SimpleApplication {
 
     //TODO: rename to cameracontroller
@@ -93,14 +95,11 @@ public class SuperSimpleApplication extends SimpleApplication {
         sTpf = tpf;
     }
 
-    private static boolean sRunning = true;
-    public static boolean isRunning() { return sRunning; }
-
     @Override
     public void stop() {
-        sRunning = false;
-        Game.closeConnections();
         super.stop();
+        ChunkBakerThread.stopAllThreads();
+        Game.closeConnections();
     }
 
     public static void main(String[] args){

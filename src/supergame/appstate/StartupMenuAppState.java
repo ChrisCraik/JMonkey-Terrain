@@ -13,28 +13,28 @@ import de.lessvoid.nifty.elements.Element;
 import de.lessvoid.nifty.elements.render.TextRenderer;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
+import supergame.application.VerySimpleApplication;
 import supergame.terrain.modify.ChunkModifier;
 
 public class StartupMenuAppState extends AbstractAppState implements ScreenController {
     private AppStateManager mStateManager;
-    private Application mApp;
+    private VerySimpleApplication mApp;
     private Nifty mNifty;
-    private boolean mIsHosting;
+    private boolean mIsHosting = true;
 
     ///////////////////////////////////////////////////////////////////////////
     // AppState methods
     ///////////////////////////////////////////////////////////////////////////
 
-    @Override public void initialize(AppStateManager stateManager, Application app) {
+    @Override
+    public void initialize(AppStateManager stateManager, Application app) {
         mStateManager = stateManager;
-        mApp = app;
-
-        mApp.getInputManager().setCursorVisible(true);
+        mApp = (VerySimpleApplication) app;
+        mApp.setMenuMode(true);
     }
 
     @Override
     public void cleanup() {
-        mApp.getInputManager().setCursorVisible(false);
     }
 
     @Override
@@ -55,6 +55,7 @@ public class StartupMenuAppState extends AbstractAppState implements ScreenContr
             mStateManager.attach(new NetworkAppState(mIsHosting ?
                     NetworkAppState.TYPE_SERVER : NetworkAppState.TYPE_CLIENT));
             mNifty.gotoScreen("end");
+            mApp.setMenuMode(false);
         }
         // FIXME: remove this appstate when animation completes
     }
@@ -65,7 +66,6 @@ public class StartupMenuAppState extends AbstractAppState implements ScreenContr
 
     @Override
     public void bind(Nifty nifty, Screen screen) {
-        System.out.println("StartupMenu binding nifty");
         mNifty = nifty;
     }
 

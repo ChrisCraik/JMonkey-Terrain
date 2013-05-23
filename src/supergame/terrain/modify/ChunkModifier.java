@@ -96,7 +96,7 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
 
     private enum State {
         CREATED, STARTED, FINISHED
-    };
+    }
 
     /**
      * Tell the chunk modifier system to process modifications and kick off new
@@ -141,8 +141,9 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
      * ChunkProcessor if generation had not already started.
      */
     final public void tryStart(ChunkProcessor cp) {
-        if (mState != State.CREATED)
+        if (mState != State.CREATED) {
             return;
+        }
 
         mState = State.STARTED;
 

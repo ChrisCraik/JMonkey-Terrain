@@ -50,7 +50,6 @@ public class LocalPlayerCreatureIntelligence extends CreatureIntelligence implem
         mToolMain = mToolSecondary = false;
     }
 
-
     @Override
     public void onAction(String binding, boolean value, float arg2) {
         if (binding.equals("left")) {

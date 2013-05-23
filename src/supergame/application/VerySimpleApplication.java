@@ -2,7 +2,6 @@ package supergame.application;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.asset.plugins.FileLocator;
-import com.jme3.bullet.BulletAppState;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.KeyTrigger;
@@ -12,13 +11,12 @@ import com.jme3.light.DirectionalLight;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
-import com.jme3.post.FilterPostProcessor;
-import com.jme3.shadow.PssmShadowFilter;
 import com.jme3.system.AppSettings;
 
 import de.lessvoid.nifty.Nifty;
 import supergame.Config;
 import supergame.appstate.ChunkAppState;
+import supergame.appstate.PhysicsAppState;
 import supergame.appstate.StartupMenuAppState;
 import supergame.terrain.modify.ChunkCastle;
 
@@ -68,12 +66,13 @@ public class VerySimpleApplication extends SimpleApplication {
 
         // initialize basic drawing (color, shadows)
         viewPort.setBackgroundColor(new ColorRGBA(0.5f, 0.5f, 1, 1));
+        /* Doesn't yet work - needs tuning
         FilterPostProcessor fpp = new FilterPostProcessor(assetManager);
         PssmShadowFilter pssmShadowFilter = new PssmShadowFilter(assetManager, 1024*2, 3);
-        pssmShadowFilter.setDirection(new Vector3f(-.5f,-.6f,-.7f).normalizeLocal());
+        pssmShadowFilter.setDirection(new Vector3f(-.5f, -.6f, -.7f).normalizeLocal());
         fpp.addFilter(pssmShadowFilter);
         viewPort.addProcessor(fpp);
-
+        */
 
         NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
                 inputManager, audioRenderer, guiViewPort);
@@ -83,10 +82,16 @@ public class VerySimpleApplication extends SimpleApplication {
         guiViewPort.addProcessor(niftyDisplay);
 
         stateManager.attach(startup);
-        stateManager.attach(new BulletAppState());
+        stateManager.attach(new PhysicsAppState());
         stateManager.attach(new ChunkAppState());
 
         ChunkCastle.create();
+    }
+
+    public void setMenuMode(boolean enable) {
+        System.out.println("menu mode " + enable);
+        flyCam.setEnabled(!enable);
+        inputManager.setCursorVisible(enable);
     }
 
     public static void main(String[] args){

@@ -1,6 +1,7 @@
 
 package supergame.control;
 
+import com.jme3.bullet.control.CharacterControl;
 import com.jme3.input.InputManager;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.math.Vector3f;
@@ -82,7 +83,7 @@ public class LocalProduceIntentControl extends AbstractControl {
                 mToolSelection = 3;
             }
         }
-    };
+    }
 
     private final Camera mCamera;
     private final Intent mIntent;

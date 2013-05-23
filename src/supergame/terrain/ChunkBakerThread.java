@@ -11,10 +11,13 @@ public class ChunkBakerThread extends Thread {
     private final int mId;
     private final ChunkProvider mChunkProvider;
 
+    private static boolean sRunning = true;
+    public static void stopAllThreads() { sRunning = false; }
+
     public ChunkBakerThread(int id, ChunkProvider chunkProvider) {
-        super("ChunkBakerThread " + id);
         mId = id;
         mChunkProvider = chunkProvider;
+        System.out.println("ChunkBakerThread " + id);
     }
 
     /*
@@ -26,14 +29,14 @@ public class ChunkBakerThread extends Thread {
         Chunk current;
         Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
         Object buffers = Chunk.parallel_workerBuffersInit();
-        while (SuperSimpleApplication.isRunning()) {
+        while (sRunning) {
             try {
                 current = mChunkProvider.getChunkToProcess();
                 if (current != null) {
                     current.parallel_process(buffers);
                 }
             } catch (InterruptedException e) {
-                System.out.println("interruptedexception ignored");
+                System.out.println("InterruptedException ignored");
             } catch (Exception e) {
                 System.out.println("ERROR: Worker thread experienced exception");
                 e.printStackTrace();

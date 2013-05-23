@@ -63,7 +63,7 @@ public class ChunkAppState extends AbstractAppState {
                 Chunk oldChunk = mChunks.remove(i);
 
                 if (oldChunk == null) {
-                    System.err.println("swapped out nonexistant chunk...");
+                    System.err.println("swapped out nonexistent chunk...");
                     System.exit(1);
                 }
 
@@ -107,6 +107,12 @@ public class ChunkAppState extends AbstractAppState {
         for (Chunk c : mChunks.values()) {
             attachChunkGeometry(c.serial_getNewGeometry());
         }
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        ChunkBakerThread.stopAllThreads();
     }
 
     private void attachChunkGeometry(Geometry g) {
@@ -199,7 +205,7 @@ public class ChunkAppState extends AbstractAppState {
         // moving chunks in one dimension means a 2d slice of chunks no longer
         // in range.
         int distance = Config.CHUNK_LOAD_DISTANCE;
-        for (int i = -distance; i <= distance; i++)
+        for (int i = -distance; i <= distance; i++) {
             for (int j = -distance; j <= distance; j++) {
                 if (dx == 1) {
                     prioritizeChunk(x + distance, y + i, z + j);
@@ -225,6 +231,7 @@ public class ChunkAppState extends AbstractAppState {
                     deprioritizeChunk(x + i, y + j, z + distance + 1);
                 }
             }
+        }
 
         mLastX = x;
         mLastY = y;

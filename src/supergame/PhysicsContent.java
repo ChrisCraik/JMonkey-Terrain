@@ -13,6 +13,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.shape.Box;
 
+@Deprecated
 public class PhysicsContent {
     private final BulletAppState mBulletAppState;
     private final Node mRootNode;
@@ -22,7 +23,8 @@ public class PhysicsContent {
     public abstract class PhysicsRegistrar {
         public abstract void registerPhysics(Object obj);
         public abstract void unregisterPhysics(Object obj);
-    };
+    }
+
     public PhysicsRegistrar getRegistrar() { return mRegistrar; }
 
     public PhysicsContent(Node rootNode, AssetManager assetManager, AppStateManager stateManager) {

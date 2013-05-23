@@ -1,18 +1,23 @@
 package supergame.appstate;
 
 import com.jme3.app.Application;
+import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 
 import supergame.character.CharacterFactory;
+import supergame.network.EntityManager;
 
 public class NetworkAppState extends AbstractAppState {
     public static final int TYPE_SERVER = 0;
     public static final int TYPE_CLIENT = 1;
     private final boolean mIsServer;
+    private EntityManager mEntityManager;
+
 
     public NetworkAppState(int type) {
         mIsServer = (type == TYPE_SERVER);
+        System.out.println("creating NAS, isserver " + mIsServer);
     }
 
     @Override
@@ -23,14 +28,17 @@ public class NetworkAppState extends AbstractAppState {
         if (mIsServer) {
             System.out.println("creating player and ai");
 
-            CharacterFactory.createPlayer(app);
-            CharacterFactory.createAi(app);
+            CharacterFactory.createPlayer((SimpleApplication)app);
+            CharacterFactory.createAi((SimpleApplication)app);
         }
+        // TODO: create entity manager
     }
 
     @Override
     public void cleanup() {
-        //TODO: closeConnections
+        if (mEntityManager != null) {
+            mEntityManager.close();
+        }
     }
 
     @Override

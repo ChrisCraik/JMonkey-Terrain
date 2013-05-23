@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
  * complete.
  */
 
+@Deprecated
 public class ChunkManager implements ChunkProvider, ChunkProcessor {
     private long mLastX, mLastY, mLastZ;
 

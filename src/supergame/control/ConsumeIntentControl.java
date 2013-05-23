@@ -48,7 +48,7 @@ public class ConsumeIntentControl extends AbstractControl {
     @Override
     protected void controlUpdate(float tpf) {
         mMoveDirection.set(mIntent.x, 0, mIntent.z);
-        if (mMoveDirection.lengthSquared() > 1f) {
+        if (mMoveDirection.lengthSquared() > 1f || mIntent.sprint) {
             mMoveDirection.normalizeLocal();
         }
         mMoveDirection.multLocal(mIntent.sprint ? 0.5f : 0.25f);

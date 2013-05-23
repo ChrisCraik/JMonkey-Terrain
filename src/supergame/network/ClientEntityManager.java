@@ -61,10 +61,7 @@ public class ClientEntityManager extends EntityManager {
      */
     public void applyEntityChanges(double timestamp,
             HashMap<Integer, EntityData> changeMap) {
-        Iterator<Map.Entry<Integer, EntityData>> it = changeMap.entrySet()
-                .iterator();
-        while (it.hasNext()) {
-            Map.Entry<Integer, EntityData> entry = it.next();
+        for (Map.Entry<Integer, EntityData> entry : changeMap.entrySet()) {
             int id = entry.getKey();
             EntityData data = entry.getValue();
 

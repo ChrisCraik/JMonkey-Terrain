@@ -2,7 +2,7 @@
 <nifty>
     <useStyles filename="nifty-default-styles.xml" />
     <useControls filename="nifty-default-controls.xml" />
-    <screen id="start" controller="supergame.gui.Game">
+    <screen id="start" controller="supergame.appstate.StartupMenuAppState">
         <layer childLayout="center">
             <panel style="nifty-panel-simple" width="35%" childLayout="vertical" visibleToMouse="true">
                 <effect>
