@@ -11,6 +11,7 @@ import org.lwjgl.input.Keyboard;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.DesiredActionMessage;
 
+@Deprecated
 public class LocalPlayerCreatureIntelligence extends CreatureIntelligence implements ActionListener {
     private final Vector3f mWalkDir = new Vector3f();
     private final Vector3f mForwardDir = new Vector3f();

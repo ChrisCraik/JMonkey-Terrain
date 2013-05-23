@@ -17,7 +17,6 @@ public class NetworkAppState extends AbstractAppState {
 
     public NetworkAppState(int type) {
         mIsServer = (type == TYPE_SERVER);
-        System.out.println("creating NAS, isserver " + mIsServer);
     }
 
     @Override
@@ -25,6 +24,7 @@ public class NetworkAppState extends AbstractAppState {
         //in initialize, create entityManager and attach
         //TODO: try manager.bind(1432, 1432);
         //TODO: try manager.connect(Config.CONNECT_TIMEOUT_MS, "localhost", 1432, 1432);
+        stateManager.getState(ChunkAppState.class).setServerMode(mIsServer);
         if (mIsServer) {
             System.out.println("creating player and ai");
 

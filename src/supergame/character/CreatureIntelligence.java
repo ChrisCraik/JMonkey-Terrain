@@ -9,6 +9,7 @@ import supergame.network.Structs.DesiredActionMessage;
 /**
  * A CreatureIntelligence controls a specific creature.
  */
+@Deprecated
 public abstract class CreatureIntelligence {
     /**
      * Called each frame to query the Creature's desired actions.

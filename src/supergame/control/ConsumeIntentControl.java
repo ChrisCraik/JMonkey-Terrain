@@ -8,6 +8,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 
+import supergame.character.Toolset;
 import supergame.network.Structs.Intent;
 
 /**
@@ -23,6 +24,8 @@ public class ConsumeIntentControl extends AbstractControl {
     private final CharacterControl mCharacterControl;
 
     private final Vector3f mMoveDirection = new Vector3f();
+    private final Vector3f mPosition = new Vector3f();
+    private final Toolset mToolset = new Toolset();
 
     // time from liftoff to peak of a jump, used to workaround onGround bug
     private final double JUMP_TIME_TO_PEAK = 0.667;
@@ -61,6 +64,10 @@ public class ConsumeIntentControl extends AbstractControl {
                 mTimeSinceLastJump = 0;
             }
         }
+
+        mCharacterControl.getPhysicsLocation(mPosition);
+        mToolset.operate(mPosition, mIntent.heading, mIntent.pitch,
+                mIntent.use0, mIntent.use1, mIntent.toolSelection, mIntent.targetDistance);
     }
 
 }

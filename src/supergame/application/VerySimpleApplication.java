@@ -30,7 +30,10 @@ public class VerySimpleApplication extends SimpleApplication {
         inputManager.addMapping("right", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("forward", new KeyTrigger(KeyInput.KEY_W));
         inputManager.addMapping("back", new KeyTrigger(KeyInput.KEY_S));
+
         inputManager.addMapping("jump", new KeyTrigger(KeyInput.KEY_SPACE));
+        inputManager.addMapping("duck", new KeyTrigger(KeyInput.KEY_LSHIFT));
+        inputManager.addMapping("sprint", new KeyTrigger(KeyInput.KEY_LCONTROL));
 
         inputManager.addMapping("target-forward", new KeyTrigger(KeyInput.KEY_UP));
         inputManager.addMapping("target-back", new KeyTrigger(KeyInput.KEY_DOWN));
@@ -89,9 +92,20 @@ public class VerySimpleApplication extends SimpleApplication {
     }
 
     public void setMenuMode(boolean enable) {
-        System.out.println("menu mode " + enable);
         flyCam.setEnabled(!enable);
         inputManager.setCursorVisible(enable);
+    }
+
+    // TODO: better method for frame time tracking
+    private static float sTpf;
+    public static float tpf() {
+        return sTpf;
+    }
+
+    @Override
+    public void simpleUpdate(float tpf) {
+        super.simpleUpdate(tpf);
+        sTpf = tpf;
     }
 
     public static void main(String[] args){

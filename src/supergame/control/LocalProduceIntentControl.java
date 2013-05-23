@@ -26,7 +26,7 @@ public class LocalProduceIntentControl extends AbstractControl {
         static final float MAX_TARGET = 10;
         float mTargetDistance = 5;
 
-        boolean mLeft, mRight, mForward, mBack, mJump;
+        boolean mLeft, mRight, mForward, mBack, mJump, mDuck, mSprint;
         boolean mToolMain, mToolSecondary;
         int mToolSelection = 0;
 
@@ -35,7 +35,10 @@ public class LocalProduceIntentControl extends AbstractControl {
             inputManager.addListener(this, "right");
             inputManager.addListener(this, "forward");
             inputManager.addListener(this, "back");
+
             inputManager.addListener(this, "jump");
+            inputManager.addListener(this, "duck");
+            inputManager.addListener(this, "sprint");
 
             inputManager.addListener(this, "target-forward");
             inputManager.addListener(this, "target-back");
@@ -61,6 +64,10 @@ public class LocalProduceIntentControl extends AbstractControl {
                 mBack = keyDown;
             } else if (binding.equals("jump")) {
                 mJump = keyDown;
+            } else if (binding.equals("duck")) {
+                mDuck = keyDown;
+            } else if (binding.equals("sprint")) {
+                mSprint = keyDown;
             } else if (binding.equals("target-forward")) {
                 mTargetDistance = Math.max(mTargetDistance + 1, MAX_TARGET);
             } else if (binding.equals("target-back")) {
@@ -112,7 +119,6 @@ public class LocalProduceIntentControl extends AbstractControl {
     @Override
     protected void controlUpdate(float tpf) {
         mCamera.setLocation(spatial.getLocalTranslation());
-
         mCamera.getDirection(mForwardDir);
         mForwardDir.y = 0;
         mForwardDir.normalizeLocal();
@@ -135,9 +141,12 @@ public class LocalProduceIntentControl extends AbstractControl {
 
         mIntent.x = mWalkDir.x;
         mIntent.z = mWalkDir.z;
+        float angles[] = mCamera.getRotation().toAngles(null);
+        mIntent.pitch = - (float) (angles[0] * 180 / Math.PI);
+        mIntent.heading =  - (float) (angles[1] * 180 / Math.PI);
         mIntent.jump = mLocalListener.mJump;
-        mIntent.duck = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT);
-        mIntent.sprint = Keyboard.isKeyDown(Keyboard.KEY_LCONTROL);
+        mIntent.duck = mLocalListener.mDuck;
+        mIntent.sprint = mLocalListener.mSprint;
 
         mIntent.use0 = mLocalListener.mToolMain;
         mIntent.use1 = mLocalListener.mToolSecondary;

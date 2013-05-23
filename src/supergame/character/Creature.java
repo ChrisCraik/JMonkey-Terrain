@@ -21,6 +21,7 @@ import supergame.network.Structs.EntityData;
  * {@link CreatureIntelligence} defines which item the creature tries to use and
  * when, desired movement direction, and even spoken text.
  */
+@Deprecated
 public class Creature extends Entity {
 
     private final static int LERP_FIELDS = 5;

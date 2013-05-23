@@ -115,19 +115,23 @@ public class ChunkAppState extends AbstractAppState {
         ChunkBakerThread.stopAllThreads();
     }
 
+    public void setServerMode(boolean isServerMode) {
+        ChunkModifier.setServerMode(isServerMode, mChunkProcessor);
+    }
+
     private void attachChunkGeometry(Geometry g) {
         if (g == null) return;
 
         g.setMaterial(MaterialManager.getTerrainMaterial());
         mChunkRoot.attachChild(g);
-        mStateManager.getState(BulletAppState.class).getPhysicsSpace().add(g);
+        mStateManager.getState(PhysicsAppState.class).getPhysicsSpace().add(g);
     }
 
     private void detachChunkGeometry(Geometry g) {
         if (g == null) return;
 
         g.removeFromParent();
-        mStateManager.getState(BulletAppState.class).getPhysicsSpace().remove(g);
+        mStateManager.getState(PhysicsAppState.class).getPhysicsSpace().remove(g);
     }
     private void sweepNearby(long x, long y, long z, int limit, boolean stall) {
         for (int i = -limit; i <= limit; i++) {

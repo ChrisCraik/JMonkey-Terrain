@@ -29,7 +29,7 @@ public class AiProduceIntentControl extends AbstractControl {
     @Override
     protected void controlUpdate(float tpf) {
         time += tpf;
-        mIntent.x = (float) Math.sin(time) / 8;
-        mIntent.z = (float) Math.cos(time) / 8;
+        mIntent.x = (float) Math.sin(time) / 4;
+        mIntent.z = (float) Math.cos(time) / 4;
     }
 }

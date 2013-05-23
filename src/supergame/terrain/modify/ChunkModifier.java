@@ -41,10 +41,6 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
 
     static int sMaxSeen = 0;
     public static float getCompletion() {
-        if (sMaxSeen == 0) {
-            sMaxSeen = sChangeList.size();
-            return 0;
-        }
         return 1.0f - (1.0f * sChangeList.size() / sMaxSeen);
     }
 
@@ -116,10 +112,10 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
             // start chunk processing, if needed
             currentModifier.tryStart(cp);
 
-            // if modifications are complete, swap them in and remove the
-            // modification
-            if (currentModifier.tryFinish(cp))
+            // if modifications are complete, swap them in and remove the modification
+            if (currentModifier.tryFinish(cp)) {
                 sChangeList.removeFirst();
+            }
         }
 
         if (!sServerMode) {
@@ -134,6 +130,7 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
 
     public ChunkModifier() {
         sChangeList.addLast(this);
+        sMaxSeen = Math.max(sMaxSeen, sChangeList.size());
     }
 
     /**
@@ -166,8 +163,9 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
      * @return true if the ChunkModifier has completed chunk generation
      */
     final public boolean tryFinish(ChunkProcessor cp) {
-        if (mState != State.FINISHED)
+        if (mState != State.FINISHED) {
             return false;
+        }
 
         cp.swapChunks(mChunks);
         return true;
@@ -183,6 +181,8 @@ public abstract class ChunkModifier implements ChunkModifierInterface {
 
     /**
      * Helper method for getIndexList, when a simple boundingBox will suffice
+     *
+     * // TODO: less memory allocation
      *
      * @return vector of chunk indices containing the bounding box
      */

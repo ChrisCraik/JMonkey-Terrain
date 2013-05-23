@@ -9,6 +9,7 @@ import supergame.network.Structs.DesiredActionMessage;
 import supergame.terrain.modify.BlockChunkModifier;
 import supergame.terrain.modify.SphereChunkModifier;
 
+@Deprecated
 public class Equipment {
     public static void HPVector(Vector3f vec, float heading, float pitch) {
         float x,y,z;

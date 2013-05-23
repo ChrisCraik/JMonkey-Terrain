@@ -58,6 +58,12 @@ public class Structs {
             toolSelection = other.toolSelection;
             targetDistance = other.targetDistance;
         }
+
+        @Override
+        public String toString() {
+            return String.format("Moving %1.2f %1.2f, h %3.0f, p %3.0f (j%b s%b d%b u0%b u1%b) t %d, d %f",
+                    x, z, heading, pitch, jump, sprint, duck, use0, use1, toolSelection, targetDistance);
+        }
     }
 
     public static class DesiredActionMessage {

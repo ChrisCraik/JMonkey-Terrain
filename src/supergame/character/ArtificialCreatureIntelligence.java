@@ -9,6 +9,7 @@ import supergame.network.Structs.DesiredActionMessage;
 /**
  * Simple AI for NPCs. Currently just spins the character in circles.
  */
+@Deprecated
 public class ArtificialCreatureIntelligence extends CreatureIntelligence {
     @Override
     public void queryDesiredAction(double localTime, DesiredActionMessage control, ChatMessage chat) {
