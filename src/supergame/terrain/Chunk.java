@@ -49,9 +49,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Chunk {
     //public static Vec3[] rayDistribution;
 
-    public static final float colors[][][] = { { { 0, 1, 0, 1 }, { 1, 0, 0, 1 } },
-           { { 1, 0.5f, 0, 1 }, { 0.5f, 0, 1, 1 } }, { { 0.9f, 0.9f, 0.9f, 1 }, { 0.4f, 0.4f, 0.4f, 1 } } };
-
     private static final int SERIAL_INITIAL = 0; // Chunk allocated, not yet processed
     private static final int PARALLEL_PROCESSING = 1; // being processed by worker thread
     private static final int PARALLEL_COMPLETE = 2; // Processing complete, render-able
@@ -71,7 +68,9 @@ public class Chunk {
     // physics engine needs ByteBuffers, so we don't use others for simplicity
     private ByteBuffer mChunkShortIndices, mChunkIntIndices, mChunkVertices, mChunkNormals;
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
     // Serial Methods - called by main loop
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
     public Chunk(ChunkIndex index) {
         mIndex = index;
@@ -111,6 +110,11 @@ public class Chunk {
             mChunkVertices = getByteBuffer(remoteData.vertices);
             mChunkNormals = getByteBuffer(remoteData.normals);
             mIsEmpty = false;
+
+            // TODO: do this on network thread if expensive -
+            // currently will be done on worker thread for server
+            String chunkName = "Chunk" + mIndex.toString();
+            mGeometry = ChunkUtils.createGeometry(chunkName, mChunkIntIndices, mChunkVertices, mChunkNormals);
         }
 
         mState.set(PARALLEL_COMPLETE);
@@ -138,9 +142,16 @@ public class Chunk {
         return mGeometry; // null if empty
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
     // Parallel Methods - called by worker threads
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    /** per worker/thread temporary buffer data for chunk processing */
+    /**
+     * Per worker/thread temporary buffer data for chunk processing
+     *
+     * Instead of using adaptive structures to store geometry, we generate the data in static, maximum size arrays
+     * When the worker thread is done it copies the used data into minimally sized, newly allocated byte buffers.
+     */
     /*package*/ static class WorkerBuffers {
         public float[][][] weights = new float[Config.CHUNK_DIVISION + 2][Config.CHUNK_DIVISION + 2][Config.CHUNK_DIVISION + 2];
         public float[] vertices = new float[9 * Config.CHUNK_DIVISION * Config.CHUNK_DIVISION * Config.CHUNK_DIVISION];
