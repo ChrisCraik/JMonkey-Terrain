@@ -2,7 +2,7 @@ package supergame.network;
 
 import com.esotericsoftware.kryonet.Server;
 
-import supergame.character.Character;
+import supergame.character.Creature;
 import supergame.network.Structs.ChunkMessage;
 import supergame.network.Structs.StartMessage;
 import supergame.terrain.ChunkIndex;
@@ -10,7 +10,7 @@ import supergame.terrain.ChunkIndex;
 import java.util.HashMap;
 
 public class ClientState {
-    public final Character mCharacter;
+    public final Creature mCreature;
 
     private final int mCreatureId;
     private String mName = null;
@@ -18,9 +18,9 @@ public class ClientState {
 
     public ClientState(ServerEntityManager server, int connectionId) {
         int charType = (connectionId == ServerEntityManager.LOCAL_CONN) ?
-                Character.SERVER_LOCAL : Character.SERVER_REMOTE;
-        mCharacter = new Character(charType);
-        mCreatureId = server.registerEntity(mCharacter);
+                Creature.SERVER_LOCAL : Creature.SERVER_REMOTE;
+        mCreature = new Creature(charType);
+        mCreatureId = server.registerEntity(mCreature);
 
         if (connectionId < 1) {
             return;

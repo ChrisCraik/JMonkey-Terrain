@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class used for processing of terrain modifications. the engine's ChunkManager
- * requires only
+ * Class used for processing of terrain modifications.
  */
 public abstract class ChunkModifier implements ChunkModifierInterface {
     private static final LinkedList<ChunkModifier> sChangeList = new LinkedList<ChunkModifier>();

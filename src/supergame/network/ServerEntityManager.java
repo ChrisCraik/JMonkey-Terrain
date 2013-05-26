@@ -146,7 +146,7 @@ public class ServerEntityManager extends EntityManager {
 
             /*
             // Create NPC
-            Character npc = new Character(Character.SERVER_AI);
+            Creature npc = new Creature(Creature.SERVER_AI);
             registerEntity(npc);
             */
         }
@@ -184,73 +184,17 @@ public class ServerEntityManager extends EntityManager {
             if (pair.object instanceof Intent) {
                 // Client updates server with state
                 Intent state = ((Intent) pair.object);
-                remoteClient.mCharacter.setIntent(state);
+                remoteClient.mCreature.setIntent(state);
             } else if (pair.object instanceof ChatMessage) {
                 // Client updates server with state
                 ChatMessage state = ((ChatMessage) pair.object);
-                remoteClient.mCharacter.setChatMessage(state);
+                remoteClient.mCreature.setChatMessage(state);
             }
         }
-
-        processAftermath(NetworkAppState.getLocalNetworkTime());
-    }
-
-    @Override
-    @Deprecated
-    protected void queryDesiredActions(double localTime) {
-        updateConnections();
-
-        // receive control messages from clients
-        TransmitPair pair;
-        for (;;) {
-            pair = pollHard(localTime, 0);
-            if (pair == null){
-                break;
-            }
-
-            sLog.info("received packet from connection " + pair.connection.getID() + ", of type "
-                    + pair.object.getClass().getName());
-            ClientState remoteClient = mClientStateMap.get(pair.connection.getID());
-            if (remoteClient == null) {
-                continue;
-            }
-
-            if (pair.object instanceof Intent) {
-                // Client updates server with state
-                Intent state = ((Intent) pair.object);
-                remoteClient.mCharacter.setIntent(state);
-            } else if (pair.object instanceof ChatMessage) {
-                // Client updates server with state
-                ChatMessage state = ((ChatMessage) pair.object);
-                remoteClient.mCharacter.setChatMessage(state);
-            }
-        }
-        /*
-        // process character move intent, and chats
-        for (Entity e : mEntityMap.values()) {
-            if (e instanceof Creature) {
-                Creature c = (Creature)e;
-                c.queryDesiredAction(localTime);
-
-                processChatMessage(localTime, c.getChat());
-            }
-        }
-        */
-    }
-
-    @Override
-    public void processAftermath(double localTime) {
-        /*
-        for (Entity e : mEntityMap.values()) {
-            if (e instanceof Creature) {
-                ((Creature)e).processAftermath();
-            }
-        }
-        */
 
         // send entity updates to clients
         StateMessage serverState = new StateMessage();
-        serverState.timestamp = localTime;
+        serverState.timestamp = NetworkAppState.getLocalNetworkTime();
         serverState.data = getEntityChanges();
         sendToAllUDP(serverState);
 

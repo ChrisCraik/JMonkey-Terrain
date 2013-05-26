@@ -6,7 +6,6 @@ import com.esotericsoftware.kryonet.Client;
 import com.jme3.app.SimpleApplication;
 import supergame.Config;
 import supergame.appstate.NetworkAppState;
-import supergame.character.Character;
 import supergame.character.Creature;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
@@ -123,13 +122,11 @@ public class ClientEntityManager extends EntityManager {
     private void sendControl() {
         // send control info to server
         if (mEntityMap.containsKey(mLocalCharId)) {
-            Character localCharacter = (Character)mEntityMap.get(mLocalCharId);
-            Structs.Intent intent = localCharacter.getIntent();
+            Creature localCreature = (Creature)mEntityMap.get(mLocalCharId);
+            Structs.Intent intent = localCreature.getIntent();
             ((Client)mEndPoint).sendUDP(intent);
             // TODO: send chat
             /*
-            Creature localCreature = (Creature)mEntityMap.get(mLocalCharId);
-            ((Client)mEndPoint).sendUDP(localCreature.getControl());
             ChatMessage chat = localCreature.getChat();
             if (chat != null && chat.s != null) {
                 System.err.println("Sending chat to server:" + chat.s);
@@ -152,7 +149,7 @@ public class ClientEntityManager extends EntityManager {
                 // ignore entities until connection confirmed, local char created
                 if (mEntityMap.isEmpty()) {
                     if (mLocalCharId == INVALID_CHARACTER_ID) continue;
-                    mEntityMap.put(mLocalCharId, new Character(Character.CLIENT_LOCAL));
+                    mEntityMap.put(mLocalCharId, new Creature(Creature.CLIENT_LOCAL));
                 }
 
                 // Server updates client with state of all entities
@@ -177,41 +174,6 @@ public class ClientEntityManager extends EntityManager {
                 ChunkMessage chunkMessage = (ChunkMessage) pair.object;
                 ChunkModifier.client_putModified(chunkMessage);
             }
-        }
-    }
-
-    @Override
-    @Deprecated
-    protected void queryDesiredActions(double localTime) {
-        localTime = NetworkAppState.getLocalNetworkTime();
-
-        sendControl();
-        receiveUpdates(null);
-
-        // move local char
-        if (mEntityMap.containsKey(mLocalCharId)) {
-            Creature localChar = (Creature)mEntityMap.get(mLocalCharId);
-            localChar.queryDesiredAction(localTime);
-        }
-    }
-
-    @Override
-    @Deprecated
-    public void processAftermath(double localTime) {
-        // for each character, sample interpolation window
-        for (Integer key : mEntityMap.keySet()) {
-            Entity value = mEntityMap.get(key);
-            if (value instanceof Creature) {
-                float bias = (key == mLocalCharId) ? 1.0f : 0.5f;
-                Creature c = (Creature)value;
-                c.sample(localTime + sClockCorrection - (Config.SAMPLE_DELAY_MS / 1000), bias);
-            }
-        }
-
-        // update controller with local position
-        if (mEntityMap.containsKey(mLocalCharId)) {
-            Creature localChar = (Creature)mEntityMap.get(mLocalCharId);
-            localChar.processAftermath();
         }
     }
 }

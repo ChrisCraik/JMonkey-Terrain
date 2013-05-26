@@ -1,176 +1,142 @@
-
 package supergame.character;
 
+import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Box;
 
-import supergame.Config;
-import supergame.gui.Game;
-import supergame.network.PiecewiseLerp;
+import supergame.application.MaterialManager;
+import supergame.application.VerySimpleApplication;
+import supergame.appstate.PhysicsAppState;
+import supergame.control.ConsumeIntentControl;
+import supergame.control.LocalProduceIntentControl;
+import supergame.control.client.RemoteControl;
+import supergame.control.server.AiProduceIntentControl;
+import supergame.control.server.RemoteProduceIntentControl;
+import supergame.network.Structs;
 import supergame.network.Structs.ChatMessage;
-import supergame.network.Structs.DesiredActionMessage;
-import supergame.network.Structs.Entity;
-import supergame.network.Structs.EntityData;
+import supergame.network.Structs.Intent;
 
-/**
- * A creature in the game world. It is controlled by a
- * {@link CreatureIntelligence} which provides it's desire. The
- * {@link CreatureIntelligence} defines which item the creature tries to use and
- * when, desired movement direction, and even spoken text.
- */
-@Deprecated
-public class Creature extends Entity {
+public class Creature extends Structs.Entity {
 
-    private final static int LERP_FIELDS = 5;
+    public static class CreatureData extends Structs.BasicSpatialData {}
 
-    public static class CreatureData extends EntityData {
-        // state for any given character that the server sends to the client
-        public float array[] = new float[LERP_FIELDS]; // x,y,z, heading, pitch
+    /*
+    SERVER:
+        Local player:
+            LocalProduceIntentControl
+            ConsumeIntentControl
+        AI:
+            AiProduceIntentControl
+            ConsumeIntentControl
+        Remote:
+            RemoteProduceIntentControl
+            ConsumeIntentControl
+    CLIENT:
+        Local player:
+            LocalProduceIntentControl
+            ConsumeIntentControl
+            RemoteControl (special logic)
+        Remote:
+            RemoteControl
+
+    Server:
+        maps client messages to spatial to RemoteProduceIntentControl
+    Client:
+        maps server messages to spatial to RemoteControls (local has special logic)
+
+    Construct scenarios:
+
+    Server creates character (for AI/other client)
+        Server knows type, can just call create...()
+        Client doesn't know type, but there's only one type currently - can just call create...(CLIENT_LOCAL)
+
+        For client creating own local player, things are simpler
+     */
+
+    public static final int SERVER_LOCAL = 0;
+    public static final int SERVER_AI = 1;
+    public static final int SERVER_REMOTE = 2;
+    public static final int CLIENT_LOCAL = 3;
+    public static final int CLIENT_REMOTE = 4;
+
+    private static final String[] TYPE_NAMES = {
+            "Player",
+            "Ai",
+            "RemoteClient",
+            "Player",
+            "Remote"};
+
+    final private static Box sBox = new Box(Vector3f.ZERO, 1, 2, 1);
+
+    static private Spatial createCreatureSpatial(int type) {
+        SimpleApplication app = VerySimpleApplication.getInstance(); // TODO: make this cleaner
+        CharacterControl characterControl = createCharacterControl();
+
+        Geometry geometry = new Geometry(TYPE_NAMES[type], sBox);
+        geometry.setMaterial(MaterialManager.getCharacterMaterial());
+        app.getStateManager().getState(PhysicsAppState.class).getPhysicsSpace().add(characterControl);
+
+        if (type != CLIENT_REMOTE) {
+            Intent intent = new Intent();
+            geometry.addControl(characterControl);
+            switch(type) {
+                case SERVER_LOCAL:
+                case CLIENT_LOCAL:
+                    geometry.addControl(new LocalProduceIntentControl(app.getCamera(),
+                            intent, app.getInputManager()));
+                    break;
+                case SERVER_AI:
+                    geometry.addControl(new AiProduceIntentControl(intent));
+                    break;
+                case SERVER_REMOTE:
+                    geometry.addControl(new RemoteProduceIntentControl(intent));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unhandled character type");
+            }
+            geometry.addControl(new ConsumeIntentControl(intent, characterControl));
+        }
+
+        if (type == CLIENT_REMOTE || type == CLIENT_LOCAL) {
+            geometry.addControl(new RemoteControl(characterControl));
+        }
+
+        app.getRootNode().attachChild(geometry);
+        characterControl.setPhysicsLocation(new Vector3f(0, 80, 0));
+        return geometry;
     }
 
-    private float mHeading = 0;
-    private float mPitch = 0;
-
-    // time from liftoff to peak of a jump, used to workaround onGround bug
-    private final double JUMP_TIME_TO_PEAK = 0.667;
-    private double mLastJump = 0;
-
-    private final Equipment mEquipment = new Equipment();
-
-    private final CreatureIntelligence mIntelligence;
-    private DesiredActionMessage mDesiredActionMessage = new DesiredActionMessage();
-    private final ChatMessage mChatMessage = new ChatMessage();
-    private final PiecewiseLerp mStateLerp = new PiecewiseLerp(Config.CHAR_STATE_SAMPLES);
-
-    private final CharacterControl mCharacterControl;
-    private final Geometry mGeometry;
-
-    // temporary vectors used for intermediate calculations. should not be
-    // queried outside of the functions that set them.
-    private final Vector3f mPosition = new Vector3f();
-
-    public Creature(float x, float y, float z, CreatureIntelligence intelligence) {
-        super(null); // fixes compile errors
+    static private CharacterControl createCharacterControl() {
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1, 2);
-        mCharacterControl = new CharacterControl(capsuleShape, 0.05f);
-        mCharacterControl.setJumpSpeed(20);
-        mCharacterControl.setFallSpeed(30);
-        mCharacterControl.setGravity(30);
-        mCharacterControl.setPhysicsLocation(new Vector3f(x, y, z));
-        Game.registerPhysics(mCharacterControl);
-
-        // create renderable geometry
-        Box box = new Box(Vector3f.ZERO, 1, 2, 1);
-        mGeometry = new Geometry("creature", box);
-        mGeometry.setMaterial(Game.getCharacterMaterial());
-        //g.addControl(mCharacterControl);
-        Game.addCreatureGeometry(mGeometry);
-
-        mIntelligence = intelligence;
-
-        // TODO: make node, add mCharacterControl as its control
+        CharacterControl characterControl = new CharacterControl(capsuleShape, 0.05f);
+        characterControl.setJumpSpeed(20);
+        characterControl.setFallSpeed(30);
+        characterControl.setGravity(30);
+        return characterControl;
     }
 
     public Creature() {
-        this(0, 0, 0, null);
+        // client only constructor
+        this(CLIENT_REMOTE);
     }
 
-    public void setControlMessage(DesiredActionMessage message) {
-        // FIXME: handle out of order messages
-
-        // FIXME: only allow on server side, for remote players
-        mDesiredActionMessage = message;
+    public Creature(int type) {
+        super(createCreatureSpatial(type));
     }
 
-    public void setChatMessage(ChatMessage chat) {
-        mChatMessage.s = chat.s;
+    public Intent getIntent() {
+        return mSpatial.getControl(LocalProduceIntentControl.class).getIntent();
     }
 
-    public void queryDesiredAction(double localTime) {
-        if (mIntelligence != null) {
-            // local controller
-            mIntelligence.queryDesiredAction(localTime, mDesiredActionMessage, mChatMessage);
-        }
-        mHeading = mDesiredActionMessage.heading;
-        mPitch = mDesiredActionMessage.pitch;
-
-        Vector3f walkDirection = new Vector3f(mDesiredActionMessage.x, 0, mDesiredActionMessage.z);
-        if (walkDirection.length() > 1f) {
-            walkDirection.normalizeLocal();
-        }
-
-        if (mDesiredActionMessage.jump && mCharacterControl.onGround()) {
-            //System.out.println("character " + this + "jumping from on ground, delta = "
-            //        + Math.abs((localTime - mLastJump) - JUMP_TIME_TO_PEAK));
-
-            if (Math.abs((localTime - mLastJump) - JUMP_TIME_TO_PEAK) > 0.05) {
-                // Hack to work around onGround returning true at the peak of a
-                // jump. Constant should be adjusted whenever character physics
-                // constants are changed
-                mCharacterControl.jump();
-            }
-            mLastJump = localTime;
-        }
-
-        walkDirection.multLocal(0.25f);
-        mCharacterControl.setWalkDirection(walkDirection);
+    public void setIntent(Intent intent) {
+        mSpatial.getControl(RemoteProduceIntentControl.class).setIntent(intent);
     }
 
-    public void processDesiredAction(boolean localToolsAllowed) {
-        // TODO: move something renderable in place of the character
-        mEquipment.processDesiredAction(mPosition, mDesiredActionMessage, localToolsAllowed);
-    }
-
-    public void processAftermath() {
-        mCharacterControl.getPhysicsLocation(mPosition);
-        mGeometry.setLocalTranslation(mPosition);
-
-        if (mIntelligence != null) {
-            mIntelligence.processAftermath(mPosition);
-        }
-    }
-
-    @Override
-    public void apply(double serverTime, EntityData packet) {
-        // store position / look angles into interpolation window
-        assert (packet instanceof CreatureData);
-        CreatureData data = (CreatureData) packet;
-        mStateLerp.addSample(serverTime, data.array);
-    }
-
-    @Override
-    public EntityData getState() {
-        CreatureData d = new CreatureData();
-        // FIXME: use final ints to index into array
-        d.array[0] = mPosition.x;
-        d.array[1] = mPosition.y;
-        d.array[2] = mPosition.z;
-        d.array[3] = mHeading;
-        d.array[4] = mPitch;
-        return d;
-    }
-
-    private final float lerpFloats[] = new float[LERP_FIELDS];
-    public void sample(double serverTime, float bias) {
-        // sample interpolation window
-        mStateLerp.sample(serverTime, lerpFloats);
-
-        Vector3f pos = new Vector3f(lerpFloats[0], lerpFloats[1], lerpFloats[2]);
-        mHeading = lerpFloats[3];
-        mPitch = lerpFloats[4];
-
-        //TODO: bias, so position = (old pos * (1-bias)) + (new pos * bias)
-        mCharacterControl.setPhysicsLocation(pos);
-    }
-
-    public DesiredActionMessage getControl() {
-        return mDesiredActionMessage;
-    }
-
-    public ChatMessage getChat() {
-        return mChatMessage;
+    public void setChatMessage(ChatMessage message) {
+        System.out.println("char " + this + " set chat message" + message.s);
     }
 }

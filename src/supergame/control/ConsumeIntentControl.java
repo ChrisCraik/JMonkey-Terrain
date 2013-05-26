@@ -9,7 +9,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 
-import supergame.character.Character;
+import supergame.character.Creature;
 import supergame.character.Toolset;
 import supergame.control.client.RemoteControl;
 import supergame.network.Structs;
@@ -85,7 +85,7 @@ public class ConsumeIntentControl extends AbstractControl {
     }
 
     public Structs.EntityData generatePacket() {
-        Character.CharacterData data = new Character.CharacterData();
+        Creature.CreatureData data = new Creature.CreatureData();
         data.array[0] = mPosition.x;
         data.array[1] = mPosition.y;
         data.array[2] = mPosition.z;

@@ -10,7 +10,6 @@ import com.esotericsoftware.kryonet.Listener;
 import com.jme3.app.SimpleApplication;
 import org.lwjgl.BufferUtils;
 
-import supergame.character.Character;
 import supergame.character.Creature;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
@@ -130,7 +129,7 @@ public abstract class EntityManager {
 
         mKryo.register(ChunkIndex.class);
         mKryo.register(ChunkMessage.class);
-        registerEntityPacket(Character.CharacterData.class, Character.class);
+        registerEntityPacket(Creature.CreatureData.class, Creature.class);
     }
 
     public void registerEntityPacket(Class<? extends EntityData> dataClass,
@@ -185,22 +184,4 @@ public abstract class EntityManager {
     //protected final ChatDisplay mChatDisplay = new ChatDisplay();
 
     public abstract void update(SimpleApplication app);
-
-    @Deprecated
-    protected abstract void queryDesiredActions(double localTime);
-    @Deprecated
-    public abstract void processAftermath(double localTime);
-    @Deprecated
-    public void queryAndProcessIntents(double localTime) {
-        queryDesiredActions(localTime);
-        for (Entity e : mEntityMap.values()) {
-            if (e instanceof Creature) {
-                // only modify chunks/spawn entities on server
-                boolean allowTools = this instanceof ServerEntityManager;
-                ((Creature)e).processDesiredAction(allowTools);
-            }
-        }
-
-        //mChatDisplay.render(localTime);
-    }
 }

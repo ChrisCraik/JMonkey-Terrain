@@ -4,8 +4,6 @@
 
 package supergame.terrain;
 
-import supergame.SuperSimpleApplication;
-
 public class ChunkBakerThread extends Thread {
     @SuppressWarnings("unused")
     private final int mId;

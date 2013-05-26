@@ -11,7 +11,7 @@ import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 
 import supergame.Config;
-import supergame.character.Character;
+import supergame.character.Creature;
 import supergame.control.LocalProduceIntentControl;
 import supergame.network.ClientEntityManager;
 import supergame.network.PiecewiseLerp;
@@ -38,7 +38,7 @@ public class RemoteControl extends AbstractControl {
     }
 
     public void applyUpdatePacket(double serverTime, EntityData packet) {
-        Character.CharacterData data = (Character.CharacterData) packet;
+        Creature.CreatureData data = (Creature.CreatureData) packet;
         mLerp.addSample(serverTime, data.array);
     }
 

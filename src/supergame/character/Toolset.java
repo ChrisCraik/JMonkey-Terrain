@@ -49,11 +49,7 @@ public class Toolset {
                     break;
 
                 case (CUBEGUN):
-                    /*
-                    Game.collision.add(Game.collision.getPhysics().createCube(0.25f, 0.5f,
-                            mTargetPos.x, mTargetPos.y, mTargetPos.z,
-                            V * mTargetDir.x, V * mTargetDir.y, V * mTargetDir.z));
-                            */
+                    // TODO
                     break;
             }
         }

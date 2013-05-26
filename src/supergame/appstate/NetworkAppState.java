@@ -36,8 +36,6 @@ public class NetworkAppState extends AbstractAppState {
                 e.printStackTrace();
             }
             mEntityManager = manager;
-            //new Character(Character.SERVER_LOCAL);
-            //new Character(Character.SERVER_AI);
         } else {
             ClientEntityManager manager = new ClientEntityManager();
             try {
@@ -64,10 +62,5 @@ public class NetworkAppState extends AbstractAppState {
         }
 
         sLocalNetworkTime += tpf;
-        // if a server, query all creatures' states, send
-
-        // if a client, copy out the Intents from all creatures
-
-        // either way, recieve relevant data
     }
 }
