@@ -110,7 +110,8 @@ public class ClientEntityManager extends EntityManager {
      * can be a significant difference between server and local time
      */
     public static double getLerpTime() {
-        return NetworkAppState.getLocalNetworkTime() + sClockCorrection - Config.SAMPLE_DELAY;
+        return NetworkAppState.getLocalNetworkTime() +
+                sClockCorrection - (Config.SAMPLE_DELAY_MS / 1000);
     }
 
     @Override
@@ -123,7 +124,8 @@ public class ClientEntityManager extends EntityManager {
         // send control info to server
         if (mEntityMap.containsKey(mLocalCharId)) {
             Character localCharacter = (Character)mEntityMap.get(mLocalCharId);
-            ((Client)mEndPoint).sendUDP(localCharacter.getIntent());
+            Structs.Intent intent = localCharacter.getIntent();
+            ((Client)mEndPoint).sendUDP(intent);
             // TODO: send chat
             /*
             Creature localCreature = (Creature)mEntityMap.get(mLocalCharId);
@@ -148,7 +150,10 @@ public class ClientEntityManager extends EntityManager {
 
             if (pair.object instanceof StateMessage) {
                 // ignore entities until connection confirmed, local char created
-                if (mEntityMap.isEmpty()) continue;
+                if (mEntityMap.isEmpty()) {
+                    if (mLocalCharId == INVALID_CHARACTER_ID) continue;
+                    mEntityMap.put(mLocalCharId, new Character(Character.CLIENT_LOCAL));
+                }
 
                 // Server updates client with state of all entities
                 StateMessage state = (StateMessage) pair.object;
@@ -164,12 +169,10 @@ public class ClientEntityManager extends EntityManager {
             } else if (pair.object instanceof StartMessage) {
                 // Server tells client which character the player controls
                 mLocalCharId = ((StartMessage) pair.object).characterEntity;
-                mEntityMap.put(mLocalCharId, new Character(Character.CLIENT_LOCAL));
-                System.err.println("Client sees localid, " + mLocalCharId);
             } else if (pair.object instanceof ChatMessage) {
-                //ChatMessage chat = (ChatMessage) pair.object;
                 //TODO: chat display
-                //mChatDisplay.addChat(localTime, chat.s, Color.white);
+                ChatMessage chat = (ChatMessage) pair.object;
+                System.out.println("chat received " + chat.s);
             } else if (pair.object instanceof ChunkMessage) {
                 ChunkMessage chunkMessage = (ChunkMessage) pair.object;
                 ChunkModifier.client_putModified(chunkMessage);
@@ -201,7 +204,7 @@ public class ClientEntityManager extends EntityManager {
             if (value instanceof Creature) {
                 float bias = (key == mLocalCharId) ? 1.0f : 0.5f;
                 Creature c = (Creature)value;
-                c.sample(localTime + sClockCorrection - Config.SAMPLE_DELAY, bias);
+                c.sample(localTime + sClockCorrection - (Config.SAMPLE_DELAY_MS / 1000), bias);
             }
         }
 

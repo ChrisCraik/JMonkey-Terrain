@@ -1,6 +1,7 @@
 package supergame.control;
 
 import com.jme3.bullet.control.CharacterControl;
+import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -12,6 +13,7 @@ import supergame.character.Character;
 import supergame.character.Toolset;
 import supergame.network.Structs;
 import supergame.network.Structs.Intent;
+import supergame.utils.GeometryUtils;
 
 /**
  * Translate incoming Intents (from the local player, server, or AI) into
@@ -25,9 +27,11 @@ public class ConsumeIntentControl extends AbstractControl {
     private final Intent mIntent;
     private final CharacterControl mCharacterControl;
 
-    private final Vector3f mMoveDirection = new Vector3f();
+    private final Vector3f mMoveDir = new Vector3f();
+    private final Vector3f mTargetDir = new Vector3f();
     private final Vector3f mPosition = new Vector3f();
     private final Toolset mToolset = new Toolset();
+    private final Quaternion mQuaternion = new Quaternion();
 
     // time from liftoff to peak of a jump, used to workaround onGround bug
     private final double JUMP_TIME_TO_PEAK = 0.667;
@@ -47,17 +51,21 @@ public class ConsumeIntentControl extends AbstractControl {
 
     @Override
     protected void controlRender(RenderManager renderManager, ViewPort viewPort) {
-        // TODO
     }
 
     @Override
     protected void controlUpdate(float tpf) {
-        mMoveDirection.set(mIntent.x, 0, mIntent.z);
-        if (mMoveDirection.lengthSquared() > 1f || mIntent.sprint) {
-            mMoveDirection.normalizeLocal();
+        // TODO: simpler / more elegant quaternion setup
+        GeometryUtils.HPVector(mTargetDir, mIntent.heading, mIntent.pitch);
+        mQuaternion.lookAt(mTargetDir, Vector3f.UNIT_Y);
+        spatial.setLocalRotation(mQuaternion);
+
+        mMoveDir.set(mIntent.x, 0, mIntent.z);
+        if (mMoveDir.lengthSquared() > 1f || mIntent.sprint) {
+            mMoveDir.normalizeLocal();
         }
-        mMoveDirection.multLocal(mIntent.sprint ? 0.5f : 0.25f);
-        mCharacterControl.setWalkDirection(mMoveDirection);
+        mMoveDir.multLocal(mIntent.sprint ? 0.5f : 0.25f);
+        mCharacterControl.setWalkDirection(mMoveDir);
 
         mTimeSinceLastJump += tpf;
         if (mIntent.jump && mCharacterControl.onGround()) {
@@ -68,7 +76,7 @@ public class ConsumeIntentControl extends AbstractControl {
         }
 
         mCharacterControl.getPhysicsLocation(mPosition);
-        mToolset.operate(mPosition, mIntent.heading, mIntent.pitch,
+        mToolset.operate(mPosition, mTargetDir,
                 mIntent.use0, mIntent.use1, mIntent.toolSelection, mIntent.targetDistance);
     }
 
@@ -78,7 +86,7 @@ public class ConsumeIntentControl extends AbstractControl {
         data.array[1] = mPosition.y;
         data.array[2] = mPosition.z;
         data.array[3] = mIntent.heading;
-        data.array[4] = mIntent.heading;
+        data.array[4] = mIntent.pitch;
         return data;
     }
 }

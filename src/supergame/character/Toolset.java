@@ -5,7 +5,6 @@ import supergame.Config;
 import supergame.application.VerySimpleApplication;
 import supergame.terrain.modify.BlockChunkModifier;
 import supergame.terrain.modify.SphereChunkModifier;
-import supergame.utils.GeometryUtils;
 
 public class Toolset {
 
@@ -14,16 +13,13 @@ public class Toolset {
     static final int SHOVEL = 2;
     static final int CUBEGUN = 3;
 
-    private final Vector3f mTargetDir = new Vector3f();
     private final Vector3f mTargetPos = new Vector3f();
     private final Vector3f mTargetVoxelPos = new Vector3f();
     private float mSecondsSinceShoot = 0;
 
-    public void operate(Vector3f position, float heading, float pitch,
+    public void operate(Vector3f position, Vector3f targetDir,
             boolean use0, boolean use1, int toolSelection, float targetDistance) {
-        GeometryUtils.HPVector(mTargetDir, heading, pitch);
-
-        mTargetPos.set(mTargetDir);
+        mTargetPos.set(targetDir);
         mTargetPos.multLocal(targetDistance);
         mTargetPos.addLocal(position);
 

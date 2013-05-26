@@ -16,7 +16,7 @@ import supergame.network.Structs.Intent;
  */
 public class RemoteProduceIntentControl extends AbstractControl {
     private final Intent mIntent;
-    private Intent mNewIntent;
+    private final Intent mNewIntent = new Intent();
 
     public RemoteProduceIntentControl(Intent intent) {
         mIntent = intent;
@@ -29,7 +29,7 @@ public class RemoteProduceIntentControl extends AbstractControl {
      */
     public void setIntent(Intent newIntent) {
         if (newIntent.timestamp > mNewIntent.timestamp) {
-            mNewIntent = newIntent;
+            mNewIntent.set(newIntent);
         }
     }
 
@@ -40,7 +40,6 @@ public class RemoteProduceIntentControl extends AbstractControl {
 
     @Override
     protected void controlRender(RenderManager arg0, ViewPort arg1) {
-        // TODO
     }
 
     @Override

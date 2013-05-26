@@ -12,9 +12,11 @@ import com.jme3.scene.control.Control;
 
 import supergame.Config;
 import supergame.character.Character;
+import supergame.control.LocalProduceIntentControl;
 import supergame.network.ClientEntityManager;
 import supergame.network.PiecewiseLerp;
 import supergame.network.Structs.EntityData;
+import supergame.utils.GeometryUtils;
 
 /**
  * Represents a server-controlled position/pitch/heading. Receives server
@@ -50,11 +52,17 @@ public class RemoteControl extends AbstractControl {
     }
 
     private final Vector3f mPosition = new Vector3f();
+    private final Vector3f mTargetDir = new Vector3f();
     private final float mLerpFloats[] = new float[LERP_FIELDS];
     private final Quaternion mQuaternion = new Quaternion();
 
     @Override
     protected void controlUpdate(float tpf) {
+        if (spatial.getControl(LocalProduceIntentControl.class) != null) {
+            // TODO: should use bias if local produce exists, and snap if necessary
+            return;
+        }
+
         mLerp.sample(ClientEntityManager.getLerpTime(), mLerpFloats);
 
         mPosition.set(mLerpFloats[0], mLerpFloats[1], mLerpFloats[2]);
@@ -64,7 +72,10 @@ public class RemoteControl extends AbstractControl {
         // sample the linearInter
         mCharacterControl.setPhysicsLocation(mPosition);
         spatial.setLocalTranslation(mPosition);
-        mQuaternion.fromAngles(0, pitch, heading);
+
+        // TODO: simpler / more elegant quaternion setup
+        GeometryUtils.HPVector(mTargetDir, heading, pitch);
+        mQuaternion.lookAt(mTargetDir, Vector3f.UNIT_Y);
         spatial.setLocalRotation(mQuaternion);
     }
 

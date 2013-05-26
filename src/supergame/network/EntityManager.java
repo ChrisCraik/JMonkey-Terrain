@@ -14,9 +14,9 @@ import supergame.character.Character;
 import supergame.character.Creature;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
-import supergame.network.Structs.DesiredActionMessage;
 import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
+import supergame.network.Structs.Intent;
 import supergame.network.Structs.StartMessage;
 import supergame.network.Structs.StateMessage;
 import supergame.terrain.ChunkIndex;
@@ -126,7 +126,7 @@ public abstract class EntityManager {
 
         mKryo.register(StartMessage.class);
         mKryo.register(ChatMessage.class);
-        mKryo.register(DesiredActionMessage.class);
+        mKryo.register(Intent.class);
 
         mKryo.register(ChunkIndex.class);
         mKryo.register(ChunkMessage.class);
@@ -180,7 +180,8 @@ public abstract class EntityManager {
         return null;
     }
 
-    protected int mLocalCharId = -1;
+    protected static final int INVALID_CHARACTER_ID = -1;
+    protected int mLocalCharId = INVALID_CHARACTER_ID;
     //protected final ChatDisplay mChatDisplay = new ChatDisplay();
 
     public abstract void update(SimpleApplication app);

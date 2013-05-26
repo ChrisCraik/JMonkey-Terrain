@@ -38,8 +38,7 @@ public class PiecewiseLerp {
         Iterator<Sample> iter = mSamples.descendingIterator();
         while (iter.hasNext()) {
             Sample s = iter.next();
-            if (timestamp > s.timestamp)
-                break;
+            if (timestamp > s.timestamp) break;
             index--;
         }
 
@@ -47,11 +46,11 @@ public class PiecewiseLerp {
             // if sample list is full, don't throw away newer samples
             return false;
         }
-
         mSamples.add(index, new Sample(timestamp, array));
 
-        if (mSamples.size() > mSampleCount)
+        if (mSamples.size() > mSampleCount) {
             mSamples.removeFirst();
+        }
 
         return true;
     }
@@ -62,6 +61,8 @@ public class PiecewiseLerp {
      * @return true if sample was interpolated, false if extrapolated
      */
     public boolean sample(double timestamp, float[] array) {
+        assert mSamples.size() > 0;
+
         Sample older = null;
         Sample newer = null;
 

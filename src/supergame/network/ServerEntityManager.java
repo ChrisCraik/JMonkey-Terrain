@@ -7,8 +7,6 @@ import com.esotericsoftware.kryonet.Server;
 import com.jme3.app.SimpleApplication;
 import supergame.Config;
 import supergame.appstate.NetworkAppState;
-import supergame.character.Character;
-import supergame.character.Creature;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
 import supergame.network.Structs.Entity;
@@ -146,9 +144,11 @@ public class ServerEntityManager extends EntityManager {
             ClientState localState = new ClientState(this, LOCAL_CONN);
             mClientStateMap.put(LOCAL_CONN, localState);
 
+            /*
             // Create NPC
             Character npc = new Character(Character.SERVER_AI);
             registerEntity(npc);
+            */
         }
 
         // new connection: create ClientState/Creature
@@ -176,8 +176,6 @@ public class ServerEntityManager extends EntityManager {
                 break;
             }
 
-            sLog.info("received packet from connection " + pair.connection.getID() + ", of type "
-                    + pair.object.getClass().getName());
             ClientState remoteClient = mClientStateMap.get(pair.connection.getID());
             if (remoteClient == null) {
                 continue;
@@ -193,6 +191,8 @@ public class ServerEntityManager extends EntityManager {
                 remoteClient.mCharacter.setChatMessage(state);
             }
         }
+
+        processAftermath(NetworkAppState.getLocalNetworkTime());
     }
 
     @Override
@@ -240,11 +240,13 @@ public class ServerEntityManager extends EntityManager {
 
     @Override
     public void processAftermath(double localTime) {
+        /*
         for (Entity e : mEntityMap.values()) {
             if (e instanceof Creature) {
                 ((Creature)e).processAftermath();
             }
         }
+        */
 
         // send entity updates to clients
         StateMessage serverState = new StateMessage();

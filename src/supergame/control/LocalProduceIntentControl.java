@@ -11,6 +11,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 
+import supergame.appstate.NetworkAppState;
 import supergame.network.Structs.Intent;
 
 /**
@@ -137,6 +138,7 @@ public class LocalProduceIntentControl extends AbstractControl {
             mWalkDir.subtractLocal(mStrafeDir);
         }
 
+        mIntent.timestamp = NetworkAppState.getLocalNetworkTime();
         mIntent.x = mWalkDir.x;
         mIntent.z = mWalkDir.z;
         float angles[] = mCamera.getRotation().toAngles(null);

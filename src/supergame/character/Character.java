@@ -33,7 +33,7 @@ public class Character extends Structs.Entity {
             AiProduceIntentControl
             ConsumeIntentControl
             NetworkBroadcastControl
-        Client:
+        Remote:
             RemoteProduceIntentControl
             ConsumeIntentControl
             NetworkBroadcastControl
@@ -42,7 +42,7 @@ public class Character extends Structs.Entity {
             LocalProduceIntentControl
             ConsumeIntentControl
             RemoteControl (special logic)
-        Other:
+        Remote:
             RemoteControl
 
     Server:
@@ -121,13 +121,13 @@ public class Character extends Structs.Entity {
         return characterControl;
     }
 
-    public Character(int type) {
-        super(createCharacterSpatial(type));
-    }
-
     public Character() {
         // client only constructor
         this(CLIENT_REMOTE);
+    }
+
+    public Character(int type) {
+        super(createCharacterSpatial(type));
     }
 
     public Intent getIntent() {
