@@ -257,7 +257,6 @@ public class ServerEntityManager extends EntityManager {
         // send chunk updates to clients
         ChunkMessage[] recentModified = ChunkModifier.server_getRecentModified();
         for (ChunkMessage message : recentModified) {
-            System.err.println("sending chunk " + message.index);
             sendToAllTCP(message);
         }
 

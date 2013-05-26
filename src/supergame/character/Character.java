@@ -28,15 +28,12 @@ public class Character extends Structs.Entity {
         Local player:
             LocalProduceIntentControl
             ConsumeIntentControl
-            NetworkBroadcastControl
         AI:
             AiProduceIntentControl
             ConsumeIntentControl
-            NetworkBroadcastControl
         Remote:
             RemoteProduceIntentControl
             ConsumeIntentControl
-            NetworkBroadcastControl
     CLIENT:
         Local player:
             LocalProduceIntentControl

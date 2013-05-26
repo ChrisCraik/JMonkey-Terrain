@@ -11,6 +11,7 @@ import com.jme3.scene.control.Control;
 
 import supergame.character.Character;
 import supergame.character.Toolset;
+import supergame.control.client.RemoteControl;
 import supergame.network.Structs;
 import supergame.network.Structs.Intent;
 import supergame.utils.GeometryUtils;
@@ -76,6 +77,9 @@ public class ConsumeIntentControl extends AbstractControl {
         }
 
         mCharacterControl.getPhysicsLocation(mPosition);
+        if (spatial.getControl(RemoteControl.class) != null) return;
+
+        // server only:
         mToolset.operate(mPosition, mTargetDir,
                 mIntent.use0, mIntent.use1, mIntent.toolSelection, mIntent.targetDistance);
     }
