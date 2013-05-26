@@ -3,7 +3,10 @@ package supergame.network;
 
 import com.esotericsoftware.kryonet.Client;
 
+import com.jme3.app.SimpleApplication;
 import supergame.Config;
+import supergame.appstate.NetworkAppState;
+import supergame.character.Character;
 import supergame.character.Creature;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
@@ -18,7 +21,6 @@ import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,17 +42,18 @@ public class ClientEntityManager extends EntityManager {
      */
     public ClientEntityManager(WritableByteChannel w) {
         super(new Client(Config.WRITE_BUFFER_SIZE, Config.OBJECT_BUFFER_SIZE), w, null);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * 'Virtual' ClientEntityManager that connects to a BufferedReader instead of a
      * server, for playing back saved network transcripts.
      *
-     * @param r Read by the client as though a stream of packets from the
-     *            server.
+     * @param r Read by the client as though a stream of packets from the server.
      */
     public ClientEntityManager(ReadableByteChannel r) {
         super(null, null, r);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -98,46 +101,70 @@ public class ClientEntityManager extends EntityManager {
     /**
      * Accounts for difference between local and server absolute timestamps
      */
-    private double mClockCorrection = Double.MAX_VALUE;
+    private static double sClockCorrection = Double.MAX_VALUE;
+
+    /**
+     * Returns lerp sample point in server time space
+     * <p>
+     * It's important to use this and only this for lerping timestamps from the server, as there
+     * can be a significant difference between server and local time
+     */
+    public static double getLerpTime() {
+        return NetworkAppState.getLocalNetworkTime() + sClockCorrection - Config.SAMPLE_DELAY;
+    }
 
     @Override
-    protected void queryDesiredActions(double localTime) {
+    public void update(SimpleApplication app) {
+        sendControl();
+        receiveUpdates(app);
+    }
+
+    private void sendControl() {
         // send control info to server
         if (mEntityMap.containsKey(mLocalCharId)) {
+            Character localCharacter = (Character)mEntityMap.get(mLocalCharId);
+            ((Client)mEndPoint).sendUDP(localCharacter.getIntent());
+            // TODO: send chat
+            /*
             Creature localCreature = (Creature)mEntityMap.get(mLocalCharId);
-            // TODO: set creature intelligence
             ((Client)mEndPoint).sendUDP(localCreature.getControl());
-
             ChatMessage chat = localCreature.getChat();
             if (chat != null && chat.s != null) {
                 System.err.println("Sending chat to server:" + chat.s);
                 ((Client)mEndPoint).sendTCP(chat);
                 chat.s = null;
             }
+            */
         }
+    }
 
+    private void receiveUpdates(SimpleApplication app) {
+        double localTime = NetworkAppState.getLocalNetworkTime();
         // receive world state from server
         TransmitPair pair;
         for (;;) {
             pair = pollHard(localTime, 0);
-            if (pair == null)
-                break;
+            if (pair == null) break;
 
             if (pair.object instanceof StateMessage) {
+                // ignore entities until connection confirmed, local char created
+                if (mEntityMap.isEmpty()) continue;
+
                 // Server updates client with state of all entities
                 StateMessage state = (StateMessage) pair.object;
                 applyEntityChanges(state.timestamp, state.data);
 
                 // update clock correction based on packet timestamp, arrival time
-                if (mClockCorrection == Double.MAX_VALUE) {
-                    mClockCorrection = state.timestamp - localTime;
+                if (sClockCorrection == Double.MAX_VALUE) {
+                    sClockCorrection = state.timestamp - localTime;
                 } else {
-                    mClockCorrection = Config.CORRECTION_WEIGHT * (state.timestamp - localTime)
-                            + (1 - Config.CORRECTION_WEIGHT) * mClockCorrection;
+                    sClockCorrection = Config.CORRECTION_WEIGHT * (state.timestamp - localTime)
+                            + (1 - Config.CORRECTION_WEIGHT) * sClockCorrection;
                 }
             } else if (pair.object instanceof StartMessage) {
                 // Server tells client which character the player controls
                 mLocalCharId = ((StartMessage) pair.object).characterEntity;
+                mEntityMap.put(mLocalCharId, new Character(Character.CLIENT_LOCAL));
                 System.err.println("Client sees localid, " + mLocalCharId);
             } else if (pair.object instanceof ChatMessage) {
                 //ChatMessage chat = (ChatMessage) pair.object;
@@ -148,6 +175,15 @@ public class ClientEntityManager extends EntityManager {
                 ChunkModifier.client_putModified(chunkMessage);
             }
         }
+    }
+
+    @Override
+    @Deprecated
+    protected void queryDesiredActions(double localTime) {
+        localTime = NetworkAppState.getLocalNetworkTime();
+
+        sendControl();
+        receiveUpdates(null);
 
         // move local char
         if (mEntityMap.containsKey(mLocalCharId)) {
@@ -157,6 +193,7 @@ public class ClientEntityManager extends EntityManager {
     }
 
     @Override
+    @Deprecated
     public void processAftermath(double localTime) {
         // for each character, sample interpolation window
         for (Integer key : mEntityMap.keySet()) {
@@ -164,7 +201,7 @@ public class ClientEntityManager extends EntityManager {
             if (value instanceof Creature) {
                 float bias = (key == mLocalCharId) ? 1.0f : 0.5f;
                 Creature c = (Creature)value;
-                c.sample(localTime + mClockCorrection - Config.SAMPLE_DELAY, bias);
+                c.sample(localTime + sClockCorrection - Config.SAMPLE_DELAY, bias);
             }
         }
 

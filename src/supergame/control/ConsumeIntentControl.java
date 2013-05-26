@@ -8,7 +8,9 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 
+import supergame.character.Character;
 import supergame.character.Toolset;
+import supergame.network.Structs;
 import supergame.network.Structs.Intent;
 
 /**
@@ -70,4 +72,13 @@ public class ConsumeIntentControl extends AbstractControl {
                 mIntent.use0, mIntent.use1, mIntent.toolSelection, mIntent.targetDistance);
     }
 
+    public Structs.EntityData generatePacket() {
+        Character.CharacterData data = new Character.CharacterData();
+        data.array[0] = mPosition.x;
+        data.array[1] = mPosition.y;
+        data.array[2] = mPosition.z;
+        data.array[3] = mIntent.heading;
+        data.array[4] = mIntent.heading;
+        return data;
+    }
 }

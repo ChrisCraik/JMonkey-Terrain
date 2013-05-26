@@ -27,7 +27,7 @@ public class RemoteProduceIntentControl extends AbstractControl {
      *
      * @param newIntent Most recently received intent (not necessarily newest)
      */
-    public void setMostRecentIntent(Intent newIntent) {
+    public void setIntent(Intent newIntent) {
         if (newIntent.timestamp > mNewIntent.timestamp) {
             mNewIntent = newIntent;
         }

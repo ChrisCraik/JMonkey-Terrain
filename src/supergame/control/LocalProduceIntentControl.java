@@ -1,7 +1,6 @@
 
 package supergame.control;
 
-import com.jme3.bullet.control.CharacterControl;
 import com.jme3.input.InputManager;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.math.Vector3f;
@@ -11,8 +10,6 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
-
-import org.lwjgl.input.Keyboard;
 
 import supergame.network.Structs.Intent;
 
@@ -96,6 +93,8 @@ public class LocalProduceIntentControl extends AbstractControl {
     private final Intent mIntent;
     private final LocalListener mLocalListener;
 
+    public Intent getIntent() { return mIntent; }
+
     public LocalProduceIntentControl(Camera camera, Intent intent, InputManager inputManager) {
         mCamera = camera;
         mIntent = intent;
@@ -109,7 +108,6 @@ public class LocalProduceIntentControl extends AbstractControl {
 
     @Override
     protected void controlRender(RenderManager renderManager, ViewPort viewPort) {
-        // TODO
     }
 
     private final Vector3f mWalkDir = new Vector3f();

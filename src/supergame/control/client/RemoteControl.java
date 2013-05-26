@@ -11,7 +11,8 @@ import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 
 import supergame.Config;
-import supergame.character.Creature.CreatureData;
+import supergame.character.Character;
+import supergame.network.ClientEntityManager;
 import supergame.network.PiecewiseLerp;
 import supergame.network.Structs.EntityData;
 
@@ -28,13 +29,14 @@ public class RemoteControl extends AbstractControl {
     private final CharacterControl mCharacterControl;
 
     public RemoteControl(CharacterControl characterControl) {
-        if (characterControl == null)
+        if (characterControl == null) {
             throw new IllegalArgumentException();
+        }
         mCharacterControl = characterControl;
     }
 
     public void applyUpdatePacket(double serverTime, EntityData packet) {
-        CreatureData data = (CreatureData) packet;
+        Character.CharacterData data = (Character.CharacterData) packet;
         mLerp.addSample(serverTime, data.array);
     }
 
@@ -45,7 +47,6 @@ public class RemoteControl extends AbstractControl {
 
     @Override
     protected void controlRender(RenderManager arg0, ViewPort arg1) {
-        // TODO
     }
 
     private final Vector3f mPosition = new Vector3f();
@@ -54,7 +55,7 @@ public class RemoteControl extends AbstractControl {
 
     @Override
     protected void controlUpdate(float tpf) {
-        mLerp.sample(/* TODO */0, mLerpFloats);
+        mLerp.sample(ClientEntityManager.getLerpTime(), mLerpFloats);
 
         mPosition.set(mLerpFloats[0], mLerpFloats[1], mLerpFloats[2]);
         float heading = mLerpFloats[3];

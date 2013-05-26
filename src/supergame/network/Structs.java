@@ -1,6 +1,9 @@
 
 package supergame.network;
 
+import com.jme3.scene.Spatial;
+import supergame.control.ConsumeIntentControl;
+import supergame.control.client.RemoteControl;
 import supergame.terrain.ChunkIndex;
 
 import java.util.HashMap;
@@ -14,17 +17,6 @@ public class Structs {
     public static class StartMessage {
         public int characterEntity;
     }
-
-    static final short OP_USE_PRIMARY = 1;
-    static final short OP_USE_SECONDARY = 2;
-    static final short OP_TOOL1 = 101;
-    static final short OP_TOOL2 = 102;
-    static final short OP_TOOL3 = 103;
-    static final short OP_TOOL4 = 104;
-    static final short OP_TOOL5 = 105;
-    static final short OP_TOOL6 = 106;
-    static final short OP_TOOL7 = 107;
-    static final short OP_TOOL8 = 108;
 
     public static class ChatMessage {
         public String s = null;
@@ -92,11 +84,24 @@ public class Structs {
     public static abstract class EntityData {
     }
 
+    public static class BasicSpatialData extends EntityData {
+        private final static int LERP_FIELDS = 5;
+        // state for any given character that the server sends to the client
+        public float array[] = new float[LERP_FIELDS]; // x,y,z, heading, pitch
+    }
+
     public static abstract class Entity {
-        PiecewiseLerp mLerp;
+        protected final Spatial mSpatial;
+        public Entity(Spatial spatial) {
+            mSpatial = spatial;
+        }
 
-        abstract public void apply(double timestamp, EntityData packet);
+        public void apply(double serverTimestamp, EntityData packet) {
+            mSpatial.getControl(RemoteControl.class).applyUpdatePacket(serverTimestamp, packet);
+        }
 
-        abstract public EntityData getState();
+        public EntityData getState() {
+            return mSpatial.getControl(ConsumeIntentControl.class).generatePacket();
+        }
     }
 }

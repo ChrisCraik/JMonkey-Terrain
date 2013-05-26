@@ -7,10 +7,11 @@ import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.EndPoint;
 import com.esotericsoftware.kryonet.Listener;
 
+import com.jme3.app.SimpleApplication;
 import org.lwjgl.BufferUtils;
 
+import supergame.character.Character;
 import supergame.character.Creature;
-import supergame.character.Creature.CreatureData;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
 import supergame.network.Structs.DesiredActionMessage;
@@ -120,8 +121,6 @@ public abstract class EntityManager {
         mKryo.register(Client.class);
         mKryo.register(Inet4Address.class);
 
-        System.out.println("");
-
         // TODO: compress the State class
         mKryo.register(StateMessage.class);
 
@@ -131,7 +130,7 @@ public abstract class EntityManager {
 
         mKryo.register(ChunkIndex.class);
         mKryo.register(ChunkMessage.class);
-        registerEntityPacket(CreatureData.class, Creature.class);
+        registerEntityPacket(Character.CharacterData.class, Character.class);
     }
 
     public void registerEntityPacket(Class<? extends EntityData> dataClass,
@@ -184,9 +183,13 @@ public abstract class EntityManager {
     protected int mLocalCharId = -1;
     //protected final ChatDisplay mChatDisplay = new ChatDisplay();
 
-    protected abstract void queryDesiredActions(double localTime);
-    public abstract void processAftermath(double localTime);
+    public abstract void update(SimpleApplication app);
 
+    @Deprecated
+    protected abstract void queryDesiredActions(double localTime);
+    @Deprecated
+    public abstract void processAftermath(double localTime);
+    @Deprecated
     public void queryAndProcessIntents(double localTime) {
         queryDesiredActions(localTime);
         for (Entity e : mEntityMap.values()) {

@@ -101,6 +101,8 @@ public class VerySimpleApplication extends SimpleApplication {
     public static float tpf() {
         return sTpf;
     }
+    private static VerySimpleApplication sApp;
+    public static VerySimpleApplication getInstance() { return sApp; }
 
     @Override
     public void simpleUpdate(float tpf) {
@@ -109,13 +111,13 @@ public class VerySimpleApplication extends SimpleApplication {
     }
 
     public static void main(String[] args){
-        VerySimpleApplication app = new VerySimpleApplication();
+        sApp = new VerySimpleApplication();
         AppSettings settings = new AppSettings(true);
         settings.setFrameRate(Config.FRAME_RATE_CAP);
         settings.setResolution(1280, 720);
         settings.setSamples(0);
-        app.setSettings(settings);
-        app.setPauseOnLostFocus(false);
-        app.start();
+        sApp.setSettings(settings);
+        sApp.setPauseOnLostFocus(false);
+        sApp.start();
     }
 }

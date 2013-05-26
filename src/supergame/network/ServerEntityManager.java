@@ -4,15 +4,16 @@ package supergame.network;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Server;
 
+import com.jme3.app.SimpleApplication;
 import supergame.Config;
-import supergame.SuperSimpleApplication;
-import supergame.character.ArtificialCreatureIntelligence;
+import supergame.appstate.NetworkAppState;
+import supergame.character.Character;
 import supergame.character.Creature;
 import supergame.network.Structs.ChatMessage;
 import supergame.network.Structs.ChunkMessage;
-import supergame.network.Structs.DesiredActionMessage;
 import supergame.network.Structs.Entity;
 import supergame.network.Structs.EntityData;
+import supergame.network.Structs.Intent;
 import supergame.network.Structs.StateMessage;
 import supergame.terrain.modify.ChunkModifier;
 import supergame.utils.Log;
@@ -20,7 +21,6 @@ import supergame.utils.Log;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,8 +30,8 @@ public class ServerEntityManager extends EntityManager {
 
     private int mNextEntityId = 1;
 
-    // FIXME: this assumes 0 isn't a valid connection. is that guaranteed?
-    private static final int LOCAL_CONN = 0;
+    // TODO: this assumes 0 isn't a valid connection. is that guaranteed?
+    public static final int LOCAL_CONN = 0;
 
     /**
      * Normal game server constructor.
@@ -48,6 +48,7 @@ public class ServerEntityManager extends EntityManager {
      */
     public ServerEntityManager(WritableByteChannel w) {
         super(new Server(Config.WRITE_BUFFER_SIZE, Config.OBJECT_BUFFER_SIZE), w, null);
+        throw new UnsupportedOperationException(); // not currently working
     }
 
     /**
@@ -57,10 +58,7 @@ public class ServerEntityManager extends EntityManager {
         // TODO: reuse map
         HashMap<Integer, EntityData> changeMap = new HashMap<Integer, EntityData>();
 
-        Iterator<Map.Entry<Integer, Entity>> it = mEntityMap.entrySet()
-                .iterator();
-        while (it.hasNext()) {
-            Map.Entry<Integer, Entity> entry = it.next();
+        for (Map.Entry<Integer, Entity> entry : mEntityMap.entrySet()) {
             changeMap.put(entry.getKey(), entry.getValue().getState());
         }
         return changeMap;
@@ -145,11 +143,11 @@ public class ServerEntityManager extends EntityManager {
         // create a local ClientState/Creature, if it hasn't been done yet
         if (!mClientStateMap.containsKey(LOCAL_CONN)) {
             sLog.info("creating char for local connection " + 0);
-            ClientState localState = new ClientState(this, LOCAL_CONN, SuperSimpleApplication.sCamera);
+            ClientState localState = new ClientState(this, LOCAL_CONN);
             mClientStateMap.put(LOCAL_CONN, localState);
 
             // Create NPC
-            Creature npc = new Creature(0, 40, 10, new ArtificialCreatureIntelligence());
+            Character npc = new Character(Character.SERVER_AI);
             registerEntity(npc);
         }
 
@@ -157,7 +155,7 @@ public class ServerEntityManager extends EntityManager {
         for (Connection c : ((Server) mEndPoint).getConnections()) {
             if (!mClientStateMap.containsKey(c.getID())) {
                 sLog.info("New connection " + c.getID() + ", creating char for connection " + c.getID());
-                ClientState newClient = new ClientState(this, c.getID(), null);
+                ClientState newClient = new ClientState(this, c.getID());
                 mClientStateMap.put(c.getID(), newClient);
 
                 // enqueue all previously modified chunks to the new client
@@ -167,6 +165,38 @@ public class ServerEntityManager extends EntityManager {
     }
 
     @Override
+    public void update(SimpleApplication app) {
+        updateConnections();
+
+        // receive control messages from clients
+        TransmitPair pair;
+        for (;;) {
+            pair = pollHard(NetworkAppState.getLocalNetworkTime(), 0);
+            if (pair == null){
+                break;
+            }
+
+            sLog.info("received packet from connection " + pair.connection.getID() + ", of type "
+                    + pair.object.getClass().getName());
+            ClientState remoteClient = mClientStateMap.get(pair.connection.getID());
+            if (remoteClient == null) {
+                continue;
+            }
+
+            if (pair.object instanceof Intent) {
+                // Client updates server with state
+                Intent state = ((Intent) pair.object);
+                remoteClient.mCharacter.setIntent(state);
+            } else if (pair.object instanceof ChatMessage) {
+                // Client updates server with state
+                ChatMessage state = ((ChatMessage) pair.object);
+                remoteClient.mCharacter.setChatMessage(state);
+            }
+        }
+    }
+
+    @Override
+    @Deprecated
     protected void queryDesiredActions(double localTime) {
         updateConnections();
 
@@ -185,17 +215,17 @@ public class ServerEntityManager extends EntityManager {
                 continue;
             }
 
-            if (pair.object instanceof DesiredActionMessage) {
+            if (pair.object instanceof Intent) {
                 // Client updates server with state
-                DesiredActionMessage state = ((DesiredActionMessage) pair.object);
-                remoteClient.mCreature.setControlMessage(state);
+                Intent state = ((Intent) pair.object);
+                remoteClient.mCharacter.setIntent(state);
             } else if (pair.object instanceof ChatMessage) {
                 // Client updates server with state
                 ChatMessage state = ((ChatMessage) pair.object);
-                remoteClient.mCreature.setChatMessage(state);
+                remoteClient.mCharacter.setChatMessage(state);
             }
         }
-
+        /*
         // process character move intent, and chats
         for (Entity e : mEntityMap.values()) {
             if (e instanceof Creature) {
@@ -205,6 +235,7 @@ public class ServerEntityManager extends EntityManager {
                 processChatMessage(localTime, c.getChat());
             }
         }
+        */
     }
 
     @Override
